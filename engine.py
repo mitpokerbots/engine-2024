@@ -1,7 +1,23 @@
 '''
-6.176 MIT POKERBOTS GAME ENGINE
+6.9630 MIT POKERBOTS GAME ENGINE
 DO NOT REMOVE, RENAME, OR EDIT THIS FILE
 '''
+
+'''
+The variant this year centers around an auction that occurs immediately after the flop
+is dealt for a single card. Both players are requested to submit a bid for the card, 
+after which the player with the higher bids wins the card. We will be utilizing a second 
+price auction in which the winner pays the amount that the other player bid. The player 
+who wins the auction receives the card, the amount the winner pays is deducted from their 
+bankroll, and the same amount is added to the pot. Note, in the case of ties, both players 
+are awarded a card and both players contribute to the pot. Bids are not capped. 
+'''
+
+''' 
+Note that changes made to the engine.py file will also have to be replicated in the 
+each of the skeleton bot files accordingly
+'''
+
 from collections import namedtuple
 from threading import Thread
 from queue import Queue
@@ -21,10 +37,12 @@ CallAction = namedtuple('CallAction', [])
 CheckAction = namedtuple('CheckAction', [])
 # we coalesce BetAction and RaiseAction for convenience
 RaiseAction = namedtuple('RaiseAction', ['amount'])
+BidAction = namedtuple('BidAction', ['bid'])
 TerminalState = namedtuple('TerminalState', ['deltas', 'previous_state'])
 
+# will not include a "bid" street as a community card is not being revealed to the players
 STREET_NAMES = ['Flop', 'Turn', 'River']
-DECODE = {'F': FoldAction, 'C': CallAction, 'K': CheckAction, 'R': RaiseAction}
+DECODE = {'F': FoldAction, 'C': CallAction, 'K': CheckAction, 'R': RaiseAction, 'B': BidAction}
 CCARDS = lambda cards: ','.join(map(str, cards))
 PCARDS = lambda cards: '[{}]'.format(' '.join(map(str, cards)))
 PVALUE = lambda name, value: ', {} ({})'.format(name, value)
@@ -39,6 +57,7 @@ STATUS = lambda players: ''.join([PVALUE(p.name, p.bankroll) for p in players])
 # C a call action in the round history
 # K a check action in the round history
 # R### a raise action in the round history
+# Bi### a bid action in the round history
 # B**,**,**,**,** the board cards in common format
 # O**,** the opponent's hand in common format
 # D### the player's bankroll delta from the round
@@ -321,6 +340,7 @@ class Game():
             self.log.append('{} dealt {}'.format(players[1].name, PCARDS(round_state.hands[1])))
             self.player_messages[0] = ['T0.', 'P0', 'H' + CCARDS(round_state.hands[0])]
             self.player_messages[1] = ['T0.', 'P1', 'H' + CCARDS(round_state.hands[1])]
+        # TODO: implement logging for bids. i think both bids should be logged. 
         elif round_state.street > 0 and round_state.button == 1:
             board = round_state.deck.peek(round_state.street)
             self.log.append(STREET_NAMES[round_state.street - 3] + ' ' + PCARDS(board) +
