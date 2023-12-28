@@ -38,6 +38,8 @@ class Runner():
             code = 'C'
         elif isinstance(action, CheckAction):
             code = 'K'
+        elif isinstance(action, BidAction):             # added BidAction
+            code = 'B' + str(action.amount)
         else:  # isinstance(action, RaiseAction)
             code = 'R' + str(action.amount)
         self.socketfile.write(code + '\n')
@@ -74,6 +76,8 @@ class Runner():
                     round_state = round_state.proceed(CheckAction())
                 elif clause[0] == 'R':
                     round_state = round_state.proceed(RaiseAction(int(clause[1:])))
+                elif clause[0] == 'Bi':     # TODO: check if anything needs to be added here
+                    pass
                 elif clause[0] == 'B':
                     round_state = RoundState(round_state.button, round_state.street, round_state.pips, round_state.stacks,
                                              round_state.hands, clause[1:].split(','), round_state.previous_state)
