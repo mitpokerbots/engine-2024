@@ -77,7 +77,7 @@ class Runner():
                 elif clause[0] == 'R':
                     round_state = round_state.proceed(RaiseAction(int(clause[1:])))
                 elif clause[0] == 'Bi':     # TODO: check if anything needs to be added here
-                    pass
+                    round_state = round_state.proceed(BidAction(int(clause[1:])))
                 elif clause[0] == 'B':
                     round_state = RoundState(round_state.button, round_state.street, round_state.pips, round_state.stacks,
                                              round_state.hands, clause[1:].split(','), round_state.previous_state)

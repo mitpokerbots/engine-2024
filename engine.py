@@ -37,8 +37,8 @@ CallAction = namedtuple('CallAction', [])
 CheckAction = namedtuple('CheckAction', [])
 # we coalesce BetAction and RaiseAction for convenience
 RaiseAction = namedtuple('RaiseAction', ['amount'])
-BidAction = namedtuple('BidAction', ['bid'])
-TerminalState = namedtuple('TerminalState', ['deltas', 'previous_state'])
+BidAction = namedtuple('BidAction', ['amount'])
+TerminalState = namedtuple('TerminalState', ['deltas', 'bids', 'previous_state'])
 
 # will not include a "bid" street as a community card is not being revealed to the players
 STREET_NAMES = ['Flop', 'Turn', 'River']
@@ -87,7 +87,7 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
             delta = self.stacks[0] - STARTING_STACK
         else:  # split the pot
             delta = (self.stacks[0] - self.stacks[1]) // 2
-        return TerminalState([delta, -delta], self)
+        return TerminalState([delta, -delta], self.bids, self)
 
     def legal_actions(self):
         '''
@@ -125,7 +125,8 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
         if self.street == 0:        # immediately after flop is dealt, we enter the auction
             return RoundState(1, 3, True, self.bids, self.pips, self.stacks, self.hands, self.deck, self)
         # new_street = 3 if self.street == 0 else self.street + 1
-        return RoundState(1, new_street, [0, 0], self.stacks, self.hands, self.deck, self)
+        # return RoundState(1, new_street, [0, 0], self.stacks, self.hands, self.deck, self)
+        return RoundState(1, self.street + 1, False, self.bids, [0, 0], self.stacks, self.hands, self.deck, self)
 
     def proceed(self, action):
         '''
@@ -134,27 +135,27 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
         active = self.button % 2
         if isinstance(action, FoldAction):
             delta = self.stacks[0] - STARTING_STACK if active == 0 else STARTING_STACK - self.stacks[1]
-            return TerminalState([delta, -delta], self)
+            return TerminalState([delta, -delta], self.bids, self)
         if isinstance(action, CallAction):
             if self.button == 0:  # sb calls bb
-                return RoundState(1, 0, [BIG_BLIND] * 2, [STARTING_STACK - BIG_BLIND] * 2, self.hands, self.deck, self)
+                return RoundState(1, 0, self.auction, self.bids, [BIG_BLIND] * 2, [STARTING_STACK - BIG_BLIND] * 2, self.hands, self.deck, self)
             # both players acted
             new_pips = list(self.pips)
             new_stacks = list(self.stacks)
             contribution = new_pips[1-active] - new_pips[active]
             new_stacks[active] -= contribution
             new_pips[active] += contribution
-            state = RoundState(self.button + 1, self.street, new_pips, new_stacks, self.hands, self.deck, self)
+            state = RoundState(self.button + 1, self.street, self.auction, self.bids, new_pips, new_stacks, self.hands, self.deck, self)
             return state.proceed_street()
         if isinstance(action, CheckAction):
             if (self.street == 0 and self.button > 0) or self.button > 1:  # both players acted
                 return self.proceed_street()
             # let opponent act
-            return RoundState(self.button + 1, self.street, self.auction, self.pips, self.stacks, self.hands, self.deck, self)
+            return RoundState(self.button + 1, self.street, self.auction, self.bids, self.pips, self.stacks, self.hands, self.deck, self)
         if isinstance(action, BidAction):
-            self.bids[active] = action.bid
+            self.bids[active] = action.amount
             if None not in self.bids:       # both players have submitted bids and we deal the extra card
-                self.auction = False
+                # self.auction = False      # don't need this line?
                 # case in which bids are equal, both players receive card
                 if self.bids[0] == self.bids[1]:
                     self.hands[0].append(self.deck.deal(1)[0])
@@ -341,7 +342,11 @@ class Player():
                 print(error_message)
                 self.game_clock = 0.
             except (IndexError, KeyError, ValueError):
+                # TODO: responses are being misformatted when running game
                 game_log.append(self.name + ' response misformatted: ' + str(clause))
+        # set a base bid action of 0 if pokerbot fails to submit legal bid action
+        if BidAction in legal_actions: 
+            return BidAction(0)
         return CheckAction() if CheckAction in legal_actions else FoldAction()
 
 
@@ -365,7 +370,6 @@ class Game():
             self.log.append('{} dealt {}'.format(players[1].name, PCARDS(round_state.hands[1])))
             self.player_messages[0] = ['T0.', 'P0', 'H' + CCARDS(round_state.hands[0])]
             self.player_messages[1] = ['T0.', 'P1', 'H' + CCARDS(round_state.hands[1])]
-        # TODO: implement logging for bids. i think both bids should be logged. 
         elif round_state.street > 0 and round_state.button == 1:
             board = round_state.deck.peek(round_state.street)
             self.log.append(STREET_NAMES[round_state.street - 3] + ' ' + PCARDS(board) +
@@ -388,6 +392,9 @@ class Game():
         elif isinstance(action, CheckAction):
             phrasing = ' checks'
             code = 'K'
+        elif isinstance(action, BidAction):
+            phrasing = ' bids ' + str(action.amount)
+            code = 'Bi' + str(action.amount)
         else:  # isinstance(action, RaiseAction)
             phrasing = (' bets ' if bet_override else ' raises to ') + str(action.amount)
             code = 'R' + str(action.amount)
@@ -407,6 +414,16 @@ class Game():
             self.player_messages[1].append('O' + CCARDS(previous_state.hands[0]))
         self.log.append('{} awarded {}'.format(players[0].name, round_state.deltas[0]))
         self.log.append('{} awarded {}'.format(players[1].name, round_state.deltas[1]))
+        # TODO: implement logging for bids. the winner will clearly know during the round how 
+        # much their opponent paid based on how much they end up paying. however, there is a
+        # question of whether the loser should learn what the winner bid. i don't think the loser
+        # should learn during the round itself. but, the below implementation reports both bids in
+        # in the round log
+        if None in round_state.bids:
+            self.log.append('Players did not reach flop. No auction occured.')
+        else:
+            self.log.append('Players submitted bids of {} and {}'.format(round_state.bids[0], round_state.bids[1]))
+        
         self.player_messages[0].append('D' + str(round_state.deltas[0]))
         self.player_messages[1].append('D' + str(round_state.deltas[1]))
 
