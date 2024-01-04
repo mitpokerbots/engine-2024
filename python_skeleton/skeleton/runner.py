@@ -3,7 +3,7 @@ The infrastructure for interacting with the engine.
 '''
 import argparse
 import socket
-from .actions import FoldAction, CallAction, CheckAction, RaiseAction
+from .actions import FoldAction, CallAction, CheckAction, RaiseAction, BidAction
 from .states import GameState, TerminalState, RoundState
 from .states import STARTING_STACK, BIG_BLIND, SMALL_BLIND
 from .bot import Bot
@@ -39,7 +39,7 @@ class Runner():
         elif isinstance(action, CheckAction):
             code = 'K'
         elif isinstance(action, BidAction):             # added BidAction
-            code = 'B' + str(action.amount)
+            code = 'A' + str(action.amount)
         else:  # isinstance(action, RaiseAction)
             code = 'R' + str(action.amount)
         self.socketfile.write(code + '\n')
@@ -76,7 +76,7 @@ class Runner():
                     round_state = round_state.proceed(CheckAction())
                 elif clause[0] == 'R':
                     round_state = round_state.proceed(RaiseAction(int(clause[1:])))
-                elif clause[0] == 'Bi':     # TODO: check if anything needs to be added here
+                elif clause[0] == 'A':     # TODO: check if anything needs to be added here
                     round_state = round_state.proceed(BidAction(int(clause[1:])))
                 elif clause[0] == 'B':
                     round_state = RoundState(round_state.button, round_state.street, round_state.pips, round_state.stacks,

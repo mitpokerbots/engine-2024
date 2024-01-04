@@ -49,6 +49,10 @@ public class Runner {
                 code = "K";
                 break;
             }
+            case BID_ACTION_TYPE: {
+                code = "A" + Integer.toString(action.amount);
+                break;
+            }
             default: {  // RAISE_ACTION_TYPE
                 code = "R" + Integer.toString(action.amount);
                 break;
@@ -115,6 +119,11 @@ public class Runner {
                     }
                     case 'R': {
                         roundState = ((RoundState)roundState).proceed(new Action(ActionType.RAISE_ACTION_TYPE,
+                                                                                 Integer.parseInt(leftover)));
+                        break;
+                    }
+                    case 'A': {
+                        roundState = ((RoundState)roundState).proceed(new Action(ActionType.BID_ACTION_TYPE,
                                                                                  Integer.parseInt(leftover)));
                         break;
                     }
