@@ -1,7 +1,7 @@
 '''
 Simple example pokerbot, written in Python.
 '''
-from skeleton.actions import FoldAction, CallAction, CheckAction, RaiseAction
+from skeleton.actions import FoldAction, CallAction, CheckAction, RaiseAction, BidAction
 from skeleton.states import GameState, TerminalState, RoundState
 from skeleton.states import NUM_ROUNDS, STARTING_STACK, BIG_BLIND, SMALL_BLIND
 from skeleton.bot import Bot
@@ -93,6 +93,8 @@ class Player(Bot):
         #    max_cost = max_raise - my_pip  # the cost of a maximum bet/raise
         if CheckAction in legal_actions:  # check-call
             return CheckAction()
+        elif BidAction in legal_actions:
+            return BidAction(0)
         return CallAction()
 
 

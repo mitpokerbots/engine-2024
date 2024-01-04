@@ -57,7 +57,7 @@ STATUS = lambda players: ''.join([PVALUE(p.name, p.bankroll) for p in players])
 # C a call action in the round history
 # K a check action in the round history
 # R### a raise action in the round history
-# Bi### a bid action in the round history
+# A### a bid action in the round history
 # B**,**,**,**,** the board cards in common format
 # O**,** the opponent's hand in common format
 # D### the player's bankroll delta from the round
@@ -105,6 +105,8 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
         # similarly, re-raising is only allowed if both players can afford it
         raises_forbidden = (continue_cost == self.stacks[active] or self.stacks[1-active] == 0)
         return {FoldAction, CallAction} if raises_forbidden else {FoldAction, CallAction, RaiseAction}
+    
+        # TODO: Checking if calling or bidding is legal?
 
     def raise_bounds(self):
         '''
@@ -163,14 +165,26 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
                     new_stacks = list(self.stacks)
                     new_stacks[0] -= self.bids[0]
                     new_stacks[1] -= self.bids[1]
-                    return RoundState(1, self.street, False, self.bids, self.pips, new_stacks, self.hands, self.deck, self)
+                    
+                    # TODO: Do we need to update pips?
+                    new_pips = list(self.pips)
+                    new_pips[0] += self.bids[0]
+                    new_pips[1] += self.bids[1]
+
+                    return RoundState(1, self.street, False, self.bids, new_pips, new_stacks, self.hands, self.deck, self)
                 else:
                 # case in which bids are not equal
                     winner = self.bids.index(max(self.bids))
                     self.hands[winner].append(self.deck.deal(1)[0])
                     new_stacks = list(self.stacks)
-                    new_stacks[winner] -= self.bids[winner]
-                    return RoundState(1, self.street, False, self.bids, self.pips, new_stacks, self.hands, self.deck, self)
+                    new_stacks[winner] -= self.bids[1 - winner]
+
+                    # TODO: Do we need to update pip?
+                    new_pips = list(self.pips)
+                    new_pips[winner] += self.bids[1 - winner]
+                    return RoundState(1, self.street, False, self.bids, new_pips, new_stacks, self.hands, self.deck, self)
+
+                    #TODO: Any way for players to know how much the other bid after auction ends?
             else:
                 return RoundState(self.button + 1, self.street, self.auction, self.bids, self.pips, self.stacks, self.hands, self.deck, self)
         # isinstance(action, RaiseAction)
@@ -429,7 +443,7 @@ class Game():
 
     def run_round(self, players):
         '''
-        Runs one round of poker.
+        Runs one round of poker (1 hand).
         '''
         deck = eval7.Deck()
         deck.shuffle()
