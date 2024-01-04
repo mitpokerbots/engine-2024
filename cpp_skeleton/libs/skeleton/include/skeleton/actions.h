@@ -7,7 +7,7 @@
 namespace pokerbots::skeleton {
 
 struct Action {
-  enum Type { FOLD, CALL, CHECK, RAISE };
+  enum Type { FOLD, CALL, CHECK, RAISE, BID };
 
   Type actionType;
   int amount;

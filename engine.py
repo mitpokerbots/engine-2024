@@ -42,7 +42,7 @@ TerminalState = namedtuple('TerminalState', ['deltas', 'bids', 'previous_state']
 
 # will not include a "bid" street as a community card is not being revealed to the players
 STREET_NAMES = ['Flop', 'Turn', 'River']
-DECODE = {'F': FoldAction, 'C': CallAction, 'K': CheckAction, 'R': RaiseAction, 'B': BidAction}
+DECODE = {'F': FoldAction, 'C': CallAction, 'K': CheckAction, 'R': RaiseAction, 'A': BidAction}
 CCARDS = lambda cards: ','.join(map(str, cards))
 PCARDS = lambda cards: '[{}]'.format(' '.join(map(str, cards)))
 PVALUE = lambda name, value: ', {} ({})'.format(name, value)
@@ -394,7 +394,7 @@ class Game():
             code = 'K'
         elif isinstance(action, BidAction):
             phrasing = ' bids ' + str(action.amount)
-            code = 'Bi' + str(action.amount)
+            code = 'A' + str(action.amount)
         else:  # isinstance(action, RaiseAction)
             phrasing = (' bets ' if bet_override else ' raises to ') + str(action.amount)
             code = 'R' + str(action.amount)
