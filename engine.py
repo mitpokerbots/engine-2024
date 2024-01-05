@@ -170,8 +170,8 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
                 # self.auction = False      # don't need this line?
                 # case in which bids are equal, both players receive card
                 if self.bids[0] == self.bids[1]:
-                    self.hands[0].append(self.deck.peek(-2)[0])
-                    self.hands[1].append(self.deck.peek(-2)[1])
+                    self.hands[0].append(self.deck.peek(48)[-1])
+                    self.hands[1].append(self.deck.peek(48)[-2])
                     new_stacks = list(self.stacks)
                     new_stacks[0] -= self.bids[0]
                     new_stacks[1] -= self.bids[1]
@@ -185,7 +185,7 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
                 else:
                 # case in which bids are not equal
                     winner = self.bids.index(max(self.bids))
-                    self.hands[winner].append(self.deck.deal(1)[0])
+                    self.hands[winner].append(self.deck.peek(48)[-1])
                     new_stacks = list(self.stacks)
                     new_stacks[winner] -= self.bids[1 - winner]
 
