@@ -422,9 +422,9 @@ class Game():
         # engine communicates cards after the auction
         if round_state.street == 3 and round_state.auction is False and round_state.button == 1: 
             self.player_messages[0].append('P0')
-            self.player_messages[0].append('N' + CCARDS(round_state.hands[0]))
+            self.player_messages[0].append('N' + ','.join([str(x) for x in round_state.bids]) + '_' + CCARDS(round_state.hands[0]))
             self.player_messages[1].append('P1')
-            self.player_messages[1].append('N' + CCARDS(round_state.hands[1]))
+            self.player_messages[1].append('N' + ','.join([str(x) for x in round_state.bids]) + '_' + CCARDS(round_state.hands[1]))
 
     def log_action(self, name, action, bet_override):
         '''
