@@ -49,4 +49,13 @@ class Bot():
         Returns:
         Your action.
         '''
-        raise NotImplementedError('get_action')
+        # raise NotImplementedError('get_action')
+        print(round_state)
+        if round_state.auction:
+            return BidAction(2)
+        elif CallAction in round_state.legal_actions():
+            return CallAction()
+        elif CheckAction in round_state.legal_actions():
+            return CheckAction()
+        else:
+            return FoldAction()

@@ -42,7 +42,7 @@ TerminalState = namedtuple('TerminalState', ['deltas', 'bids', 'previous_state']
 
 # will not include a "bid" street as a community card is not being revealed to the players
 STREET_NAMES = ['Flop', 'Turn', 'River']
-DECODE = {'F': FoldAction, 'C': CallAction, 'K': CheckAction, 'R': RaiseAction, 'B': BidAction}
+DECODE = {'F': FoldAction, 'C': CallAction, 'K': CheckAction, 'R': RaiseAction, 'A': BidAction}
 CCARDS = lambda cards: ','.join(map(str, cards))
 PCARDS = lambda cards: '[{}]'.format(' '.join(map(str, cards)))
 PVALUE = lambda name, value: ', {} ({})'.format(name, value)
@@ -57,7 +57,7 @@ STATUS = lambda players: ''.join([PVALUE(p.name, p.bankroll) for p in players])
 # C a call action in the round history
 # K a check action in the round history
 # R### a raise action in the round history
-# Bi### a bid action in the round history
+# A### a bid action in the round history
 # B**,**,**,**,** the board cards in common format
 # O**,** the opponent's hand in common format
 # D### the player's bankroll delta from the round
@@ -163,23 +163,23 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
                     new_stacks = list(self.stacks)
                     new_stacks[0] -= self.bids[0]
                     new_stacks[1] -= self.bids[1]
-                    return RoundState(1, self.street, False, self.bids, self.pips, new_stacks, self.hands, self.deck, self)
+                    return RoundState(1, 3, False, self.bids, self.pips, new_stacks, self.hands, self.deck, self)
                 else:
                 # case in which bids are not equal
                     winner = self.bids.index(max(self.bids))
                     self.hands[winner].append(self.deck.deal(1)[0])
                     new_stacks = list(self.stacks)
                     new_stacks[winner] -= self.bids[winner]
-                    return RoundState(1, self.street, False, self.bids, self.pips, new_stacks, self.hands, self.deck, self)
+                    return RoundState(1, 3, False, self.bids, self.pips, new_stacks, self.hands, self.deck, self)
             else:
-                return RoundState(self.button + 1, self.street, self.auction, self.bids, self.pips, self.stacks, self.hands, self.deck, self)
+                return RoundState(self.button + 1, 3, True, self.bids, self.pips, self.stacks, self.hands, self.deck, self)
         # isinstance(action, RaiseAction)
         new_pips = list(self.pips)
         new_stacks = list(self.stacks)
         contribution = action.amount - new_pips[active]
         new_stacks[active] -= contribution
         new_pips[active] += contribution
-        return RoundState(self.button + 1, self.street, new_pips, new_stacks, self.hands, self.deck, self)
+        return RoundState(self.button + 1, self.street, self.auction, self.bids, new_pips, new_stacks, self.hands, self.deck, self)
 
 
 class Player():
@@ -321,6 +321,7 @@ class Player():
                     self.game_clock -= end_time - start_time
                 if self.game_clock <= 0.:
                     raise socket.timeout
+                print('clause', clause)
                 action = DECODE[clause[0]]
                 if action in legal_actions:
                     if clause[0] == 'R':
@@ -341,9 +342,21 @@ class Player():
                 game_log.append(error_message)
                 print(error_message)
                 self.game_clock = 0.
-            except (IndexError, KeyError, ValueError):
+            # except (IndexError, KeyError, ValueError):
+            #     # TODO: responses are being misformatted when running game
+            #     game_log.append(self.name + ' response misformatted: ' + str(clause))
+            except IndexError:
                 # TODO: responses are being misformatted when running game
                 game_log.append(self.name + ' response misformatted: ' + str(clause))
+                game_log.append('IndexError')
+            except KeyError:
+                # TODO: responses are being misformatted when running game
+                game_log.append(self.name + ' response misformatted: ' + str(clause))
+                game_log.append('KeyError')
+            except ValueError:
+                # TODO: responses are being misformatted when running game
+                game_log.append(self.name + ' response misformatted: ' + str(clause))
+                game_log.append('ValueError')
         # set a base bid action of 0 if pokerbot fails to submit legal bid action
         if BidAction in legal_actions: 
             return BidAction(0)
@@ -394,7 +407,7 @@ class Game():
             code = 'K'
         elif isinstance(action, BidAction):
             phrasing = ' bids ' + str(action.amount)
-            code = 'Bi' + str(action.amount)
+            code = 'A' + str(action.amount)
         else:  # isinstance(action, RaiseAction)
             phrasing = (' bets ' if bet_override else ' raises to ') + str(action.amount)
             code = 'R' + str(action.amount)
