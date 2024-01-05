@@ -330,7 +330,6 @@ class Player():
         At the end of the round, we request a CheckAction from the pokerbot.
         '''
         legal_actions = round_state.legal_actions() if isinstance(round_state, RoundState) else {CheckAction}
-        print("legal actions are", legal_actions)
         if self.socketfile is not None and self.game_clock > 0.:
             clause = ''
             try:
