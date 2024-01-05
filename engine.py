@@ -58,6 +58,7 @@ STATUS = lambda players: ''.join([PVALUE(p.name, p.bankroll) for p in players])
 # K a check action in the round history
 # R### a raise action in the round history
 # A### a bid action in the round history
+# N**, ** the player's hand after the auction in common format
 # B**,**,**,**,** the board cards in common format
 # O**,** the opponent's hand in common format
 # D### the player's bankroll delta from the round
@@ -344,7 +345,6 @@ class Player():
                     self.game_clock -= end_time - start_time
                 if self.game_clock <= 0.:
                     raise socket.timeout
-                print('clause', clause)
                 action = DECODE[clause[0]]
                 if action in legal_actions:
                     if clause[0] == 'R':
@@ -421,8 +421,10 @@ class Game():
             self.player_messages[1].append(compressed_board)
         # engine communicates cards after the auction
         if round_state.street == 3 and round_state.auction is False and round_state.button == 1: 
-            self.player_messages[0].append('H' + CCARDS(round_state.hands[0]))
-            self.player_messages[1].append('H' + CCARDS(round_state.hands[1]))
+            self.player_messages[0].append('P0')
+            self.player_messages[0].append('N' + CCARDS(round_state.hands[0]))
+            self.player_messages[1].append('P1')
+            self.player_messages[1].append('N' + CCARDS(round_state.hands[1]))
 
     def log_action(self, name, action, bet_override):
         '''
