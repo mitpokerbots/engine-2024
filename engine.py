@@ -169,8 +169,8 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
                 # self.auction = False      # don't need this line?
                 # case in which bids are equal, both players receive card
                 if self.bids[0] == self.bids[1]:
-                    self.hands[0].append(self.deck.deal(1)[0])
-                    self.hands[1].append(self.deck.deal(1)[0])
+                    self.hands[0].append(self.deck.peek(-2)[0])
+                    self.hands[1].append(self.deck.peek(-2)[1])
                     new_stacks = list(self.stacks)
                     new_stacks[0] -= self.bids[0]
                     new_stacks[1] -= self.bids[1]
@@ -420,7 +420,7 @@ class Game():
             self.player_messages[0].append(compressed_board)
             self.player_messages[1].append(compressed_board)
         # engine communicates cards after the auction
-        if round_state.street == 3 and self.auction is False and round_state.button == 1: 
+        if round_state.street == 3 and round_state.auction is False and round_state.button == 1: 
             self.player_messages[0].append('H' + CCARDS(round_state.hands[0]))
             self.player_messages[1].append('H' + CCARDS(round_state.hands[1]))
 
