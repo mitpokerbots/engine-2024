@@ -97,22 +97,17 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
                 if self.bids[0] == self.bids[1]:
                     # self.hands[0].append(self.deck.deal(1)[0])
                     # self.hands[1].append(self.deck.deal(1)[0])
-                    new_stacks = list(self.stacks)
-                    new_stacks[0] -= self.bids[0]
-                    new_stacks[1] -= self.bids[1]
-                    new_pips = list(self.pips)
-                    new_pips[0] += self.bids[0]
-                    new_pips[1] += self.bids[1]
-                    return RoundState(1, 3, False, self.bids, new_pips, new_stacks, self.hands, self.deck, self)
+                    # new_stacks = list(self.stacks)
+                    # new_stacks[0] -= self.bids[0]
+                    # new_stacks[1] -= self.bids[1]
+                    return RoundState(1, 3, False, self.bids, self.pips, self.stacks, self.hands, self.deck, self)
                 else:
                 # case in which bids are not equal
                     winner = self.bids.index(max(self.bids))
                     # self.hands[winner].append(self.deck.deal(1)[0])
-                    new_stacks = list(self.stacks)
-                    new_stacks[winner] -= self.bids[1-winner]
-                    new_pips = list(self.pips)
-                    new_pips[winner] += self.bids[1 - winner]
-                    return RoundState(1, 3, False, self.bids, new_pips, new_stacks, self.hands, self.deck, self)
+                    # new_stacks = list(self.stacks)
+                    # new_stacks[winner] -= self.bids[1-winner]
+                    return RoundState(1, 3, False, self.bids, self.pips, self.stacks, self.hands, self.deck, self)
                 # return RoundState(1, 3, False, self.bids, self.pips, new_stacks, self.hands, self.deck, self)
             else:
                 return RoundState(self.button + 1, 3, True, self.bids, self.pips, self.stacks, self.hands, self.deck, self)

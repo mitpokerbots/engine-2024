@@ -175,13 +175,8 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
                     new_stacks = list(self.stacks)
                     new_stacks[0] -= self.bids[0]
                     new_stacks[1] -= self.bids[1]
-                    
-                    # TODO: Do we need to update pips?
-                    new_pips = list(self.pips)
-                    # new_pips[0] += self.bids[0]
-                    # new_pips[1] += self.bids[1]
 
-                    return RoundState(1, self.street, False, self.bids, new_pips, new_stacks, self.hands, self.deck, self)
+                    return RoundState(1, self.street, False, self.bids, self.pips, new_stacks, self.hands, self.deck, self)
                 else:
                 # case in which bids are not equal
                     winner = self.bids.index(max(self.bids))
@@ -189,12 +184,7 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
                     new_stacks = list(self.stacks)
                     new_stacks[winner] -= self.bids[1 - winner]
 
-                    # TODO: Do we need to update pip?
-                    new_pips = list(self.pips)
-                    # new_pips[winner] += self.bids[1 - winner]
-                    return RoundState(1, self.street, False, self.bids, new_pips, new_stacks, self.hands, self.deck, self)
-
-                    #TODO: Any way for players to know how much the other bid after auction ends?
+                    return RoundState(1, self.street, False, self.bids, self.pips, new_stacks, self.hands, self.deck, self)
             else:
                 return RoundState(self.button + 1, 3, True, self.bids, self.pips, self.stacks, self.hands, self.deck, self)
         # isinstance(action, RaiseAction)
@@ -422,9 +412,9 @@ class Game():
         # engine communicates cards after the auction
         if round_state.street == 3 and round_state.auction is False and round_state.button == 1: 
             self.player_messages[0].append('P0')
-            self.player_messages[0].append('N' + ','.join([str(x) for x in round_state.bids]) + '_' + CCARDS(round_state.hands[0]))
+            self.player_messages[0].append('N' + ','.join([str(x) for x in round_state.stacks]) + '_' + ','.join([str(x) for x in round_state.bids]) + '_' + CCARDS(round_state.hands[0]))
             self.player_messages[1].append('P1')
-            self.player_messages[1].append('N' + ','.join([str(x) for x in round_state.bids]) + '_' + CCARDS(round_state.hands[1]))
+            self.player_messages[1].append('N' + ','.join([str(x) for x in round_state.stacks]) + '_' + ','.join([str(x) for x in round_state.bids]) + '_' + CCARDS(round_state.hands[1]))
 
     def log_action(self, name, action, bet_override):
         '''
