@@ -107,6 +107,11 @@ public:
                                                                                           std::stoi(leftover)});
             break;
           }
+          case 'A': {
+            roundState = std::static_pointer_cast<const RoundState>(roundState)->proceed({Action::Type::BID,
+                                                                                          std::stoi(leftover)});
+            break;
+          }
           case 'B': {
             std::vector<std::string> cards;
             boost::split(cards, leftover, boost::is_any_of(","));

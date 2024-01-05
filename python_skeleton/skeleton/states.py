@@ -90,24 +90,25 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
             # let opponent act
             return RoundState(self.button + 1, self.street, self.auction, self.bids, self.pips, self.stacks, self.hands, self.deck, self)
         if isinstance(action, BidAction):
-            self.bids[active] = action.amount
+            self.bids[active] = True
             if None not in self.bids:       # both players have submitted bids and we deal the extra card
                 # self.auction = False      # don't need this line?
                 # case in which bids are equal, both players receive card
-                if self.bids[0] == self.bids[1]:
-                    self.hands[0].append(self.deck.deal(1)[0])
-                    self.hands[1].append(self.deck.deal(1)[0])
-                    new_stacks = list(self.stacks)
-                    new_stacks[0] -= self.bids[0]
-                    new_stacks[1] -= self.bids[1]
-                    return RoundState(1, 3, False, self.bids, self.pips, new_stacks, self.hands, self.deck, self)
-                else:
-                # case in which bids are not equal
-                    winner = self.bids.index(max(self.bids))
-                    self.hands[winner].append(self.deck.deal(1)[0])
-                    new_stacks = list(self.stacks)
-                    new_stacks[winner] -= self.bids[winner]
-                    return RoundState(1, 3, False, self.bids, self.pips, new_stacks, self.hands, self.deck, self)
+                # if self.bids[0] == self.bids[1]:
+                #     self.hands[0].append(self.deck.deal(1)[0])
+                #     self.hands[1].append(self.deck.deal(1)[0])
+                #     new_stacks = list(self.stacks)
+                #     new_stacks[0] -= self.bids[0]
+                #     new_stacks[1] -= self.bids[1]
+                #     return RoundState(1, 3, False, self.bids, self.pips, new_stacks, self.hands, self.deck, self)
+                # else:
+                # # case in which bids are not equal
+                #     winner = self.bids.index(max(self.bids))
+                #     self.hands[winner].append(self.deck.deal(1)[0])
+                #     new_stacks = list(self.stacks)
+                #     new_stacks[winner] -= self.bids[winner]
+                #     return RoundState(1, 3, False, self.bids, self.pips, new_stacks, self.hands, self.deck, self)
+                return RoundState(1, 3, False, self.bids, self.pips, new_stacks, self.hands, self.deck, self)
             else:
                 return RoundState(self.button + 1, 3, True, self.bids, self.pips, self.stacks, self.hands, self.deck, self)
         # isinstance(action, RaiseAction)

@@ -105,6 +105,8 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
         # similarly, re-raising is only allowed if both players can afford it
         raises_forbidden = (continue_cost == self.stacks[active] or self.stacks[1-active] == 0)
         return {FoldAction, CallAction} if raises_forbidden else {FoldAction, CallAction, RaiseAction}
+    
+        # TODO: Checking if calling or bidding is legal?
 
     def raise_bounds(self):
         '''
@@ -115,6 +117,15 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
         max_contribution = min(self.stacks[active], self.stacks[1-active] + continue_cost)
         min_contribution = min(max_contribution, continue_cost + max(continue_cost, BIG_BLIND))
         return (self.pips[active] + min_contribution, self.pips[active] + max_contribution)
+
+    def bid_bounds(self):
+        '''
+        Returns a tuple of the minimum and maximum legal bid amounts
+        '''
+        active = self.button % 2
+        min_bid = 0
+        max_bid = self.stacks[active]
+        return (min_bid, max_bid)
 
     def proceed_street(self):
         '''
@@ -163,14 +174,26 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
                     new_stacks = list(self.stacks)
                     new_stacks[0] -= self.bids[0]
                     new_stacks[1] -= self.bids[1]
-                    return RoundState(1, 3, False, self.bids, self.pips, new_stacks, self.hands, self.deck, self)
+                    
+                    # TODO: Do we need to update pips?
+                    new_pips = list(self.pips)
+                    new_pips[0] += self.bids[0]
+                    new_pips[1] += self.bids[1]
+
+                    return RoundState(1, self.street, False, self.bids, new_pips, new_stacks, self.hands, self.deck, self)
                 else:
                 # case in which bids are not equal
                     winner = self.bids.index(max(self.bids))
                     self.hands[winner].append(self.deck.deal(1)[0])
                     new_stacks = list(self.stacks)
-                    new_stacks[winner] -= self.bids[winner]
-                    return RoundState(1, 3, False, self.bids, self.pips, new_stacks, self.hands, self.deck, self)
+                    new_stacks[winner] -= self.bids[1 - winner]
+
+                    # TODO: Do we need to update pip?
+                    new_pips = list(self.pips)
+                    new_pips[winner] += self.bids[1 - winner]
+                    return RoundState(1, 3, False, self.bids, new_pips, new_stacks, self.hands, self.deck, self)
+
+                    #TODO: Any way for players to know how much the other bid after auction ends?
             else:
                 return RoundState(self.button + 1, 3, True, self.bids, self.pips, self.stacks, self.hands, self.deck, self)
         # isinstance(action, RaiseAction)
@@ -329,6 +352,11 @@ class Player():
                         min_raise, max_raise = round_state.raise_bounds()
                         if min_raise <= amount <= max_raise:
                             return action(amount)
+                    if clause[0] == 'A':
+                        amount = int(clause[1:])
+                        min_bid, max_bid = round_state.bid_bounds()
+                        if min_bid <= amount <= max_bid:
+                            return action(amount)
                     else:
                         return action()
                 game_log.append(self.name + ' attempted illegal ' + action.__name__)
@@ -391,6 +419,10 @@ class Game():
             compressed_board = 'B' + CCARDS(board)
             self.player_messages[0].append(compressed_board)
             self.player_messages[1].append(compressed_board)
+        # engine communicates cards after the auction
+        if round_state.street == 3 and self.auction is False and round_state.button == 1: 
+            self.player_messages[0].append('H' + CCARDS(round_state.hands[0]))
+            self.player_messages[1].append('H' + CCARDS(round_state.hands[1]))
 
     def log_action(self, name, action, bet_override):
         '''
@@ -442,7 +474,7 @@ class Game():
 
     def run_round(self, players):
         '''
-        Runs one round of poker.
+        Runs one round of poker (1 hand).
         '''
         deck = eval7.Deck()
         deck.shuffle()
