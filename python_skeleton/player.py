@@ -94,7 +94,10 @@ class Player(Bot):
         if CheckAction in legal_actions:  # check-call
             return CheckAction()
         elif BidAction in legal_actions:
-            return BidAction(0)
+            if active == 0:
+                return BidAction(19)
+            else:
+                return BidAction(21)
         return CallAction()
 
 

@@ -170,29 +170,29 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
                 # self.auction = False      # don't need this line?
                 # case in which bids are equal, both players receive card
                 if self.bids[0] == self.bids[1]:
-                    self.hands[0].append(self.deck.peek(-2)[0])
-                    self.hands[1].append(self.deck.peek(-2)[1])
+                    self.hands[0].append(self.deck.peek(48)[-1])
+                    self.hands[1].append(self.deck.peek(48)[-2])
                     new_stacks = list(self.stacks)
                     new_stacks[0] -= self.bids[0]
                     new_stacks[1] -= self.bids[1]
                     
                     # TODO: Do we need to update pips?
                     new_pips = list(self.pips)
-                    new_pips[0] += self.bids[0]
-                    new_pips[1] += self.bids[1]
+                    # new_pips[0] += self.bids[0]
+                    # new_pips[1] += self.bids[1]
 
                     return RoundState(1, self.street, False, self.bids, new_pips, new_stacks, self.hands, self.deck, self)
                 else:
                 # case in which bids are not equal
                     winner = self.bids.index(max(self.bids))
-                    self.hands[winner].append(self.deck.deal(1)[0])
+                    self.hands[winner].append(self.deck.peek(48)[-1])
                     new_stacks = list(self.stacks)
                     new_stacks[winner] -= self.bids[1 - winner]
 
                     # TODO: Do we need to update pip?
                     new_pips = list(self.pips)
-                    new_pips[winner] += self.bids[1 - winner]
-                    return RoundState(1, 3, False, self.bids, new_pips, new_stacks, self.hands, self.deck, self)
+                    # new_pips[winner] += self.bids[1 - winner]
+                    return RoundState(1, self.street, False, self.bids, new_pips, new_stacks, self.hands, self.deck, self)
 
                     #TODO: Any way for players to know how much the other bid after auction ends?
             else:
@@ -330,6 +330,7 @@ class Player():
         At the end of the round, we request a CheckAction from the pokerbot.
         '''
         legal_actions = round_state.legal_actions() if isinstance(round_state, RoundState) else {CheckAction}
+        print("legal actions are", legal_actions)
         if self.socketfile is not None and self.game_clock > 0.:
             clause = ''
             try:
