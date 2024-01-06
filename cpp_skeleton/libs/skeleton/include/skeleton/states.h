@@ -31,16 +31,18 @@ using StatePtr = std::shared_ptr<const State>;
 struct RoundState : public State {
   int button;
   int street;
+  bool auction;
+  std::array<std::optional<int>, 2> bids;
   std::array<int, 2> pips;
   std::array<int, 2> stacks;
   std::array<std::array<std::string, 2>, 2> hands;
   std::array<std::string, 5> deck;
   StatePtr previousState;
 
-  RoundState(int button, int street, std::array<int, 2> pips, std::array<int, 2> stacks,
+  RoundState(int button, int street, bool auction, std::array<std::optional<int>, 2> bids, std::array<int, 2> pips,  std::array<int, 2> stacks,
              std::array<std::array<std::string, 2>, 2> hands, std::array<std::string, 5> deck,
              StatePtr previousState)
-      : button(button), street(street), pips(std::move(pips)), stacks(std::move(stacks)),
+      : button(button), street(street), auction(auction), bids(std::move(bids)), pips(std::move(pips)), stacks(std::move(stacks)),
         hands(std::move(hands)), deck(std::move(deck)),
         previousState(std::move(previousState)) {}
 
@@ -62,10 +64,11 @@ using RoundStatePtr = std::shared_ptr<const RoundState>;
 
 struct TerminalState : public State {
   std::array<int, 2> deltas;
+  std::array<std::optional<int>, 2> bids;
   StatePtr previousState;
 
-  TerminalState(std::array<int, 2> deltas, StatePtr previousState)
-      : deltas(std::move(deltas)), previousState(std::move(previousState)) {}
+  TerminalState(std::array<int, 2> deltas, std::array<std::optional<int>, 2> bids,StatePtr previousState)
+      : deltas(std::move(deltas)), bids(std::move(bids)), previousState(std::move(previousState)) {}
 
 private:
   std::ostream &doFormat(std::ostream &os) const override;

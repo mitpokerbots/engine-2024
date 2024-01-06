@@ -4,6 +4,9 @@
 
 #include "constants.h"
 
+#include <fmt/format.h>
+#include <fmt/ostream.h>
+
 namespace pokerbots::skeleton {
 
 struct Action {
@@ -18,3 +21,4 @@ struct Action {
 };
 
 } // namespace pokerbots::skeleton
+template <> struct fmt::formatter<pokerbots::skeleton::Action> : ostream_formatter {};

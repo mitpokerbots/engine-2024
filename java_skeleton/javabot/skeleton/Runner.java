@@ -165,7 +165,7 @@ public class Runner {
                         roundState = new RoundState(maker.button, maker.street, maker.auction, maker.bids, maker.pips, maker.stacks,
                                                     revisedHands, maker.deck, maker.previousState);
                         
-                        roundState = new TerminalState(Arrays.asList(0, 0), /*TODO: should be roundState.bids */ Arrays.asList(0, 0), roundState);
+                        roundState = new TerminalState(Arrays.asList(0, 0), /*TODO: should be roundState.bids or maybe even maker.bids */ Arrays.asList(0, 0), roundState);
                         break;
                     }
                     case 'D': {

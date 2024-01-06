@@ -50,7 +50,7 @@ public:
   void run() {
     GameInfoPtr gameInfo = std::make_shared<GameInfo>(0, 0.0, 1);
     StatePtr roundState = std::make_shared<RoundState>(
-        0, 0, std::array<int, 2>{0, 0}, std::array<int, 2>{0, 0},
+        0, 0, false, std::array<std::optional<int>, 2>{std::nullopt, std::nullopt}, std::array<int, 2>{0, 0}, std::array<int, 2>{0, 0},
         std::array<std::array<std::string, 2>, 2>{}, std::array<std::string, 5>{},
         nullptr);
     int active = 0;
@@ -76,12 +76,13 @@ public:
             hands[active][0] = cards[0];
             hands[active][1] = cards[1];
             std::array<std::string, 5> deck;
+            std::array<std::optional<int>, 2> bids = {std::nullopt, std::nullopt};
             std::array<int, 2> pips = {SMALL_BLIND, BIG_BLIND};
             std::array<int, 2> stacks = {
                 STARTING_STACK - SMALL_BLIND,
                 STARTING_STACK - BIG_BLIND};
             roundState = std::make_shared<RoundState>(
-                0, 0, std::move(pips), std::move(stacks), std::move(hands), std::move(deck), nullptr);
+                0, 0, false, std::move(bids), std::move(pips), std::move(stacks), std::move(hands), std::move(deck), nullptr);
             if (roundFlag) {
               pokerbot.handleNewRound(
                   gameInfo,
@@ -112,6 +113,20 @@ public:
                                                                                           std::stoi(leftover)});
             break;
           }
+          case 'N': {
+            std::vector<std::string> cards;
+            boost::split(cards, leftover, boost::is_any_of(","));
+            std::array<std::array<std::string, 2>, 2> hands;
+            hands[active][0] = cards[0];
+            hands[active][1] = cards[1];
+            hands[1-active][0] = "";
+            hands[1-active][1] = "";
+            std::array<std::string, 5> newDeck; // not used
+            auto maker = std::static_pointer_cast<const RoundState>(roundState);
+            roundState = std::make_shared<RoundState>(maker->button, maker->street, maker->auction, maker->bids, maker->pips, maker->stacks,
+                                                      maker->hands, newDeck, maker->previousState);
+            break;
+          }
           case 'B': {
             std::vector<std::string> cards;
             boost::split(cards, leftover, boost::is_any_of(","));
@@ -120,7 +135,7 @@ public:
               revisedDeck[j] = cards[j];
             }
             auto maker = std::static_pointer_cast<const RoundState>(roundState);
-            roundState = std::make_shared<RoundState>(maker->button, maker->street, maker->pips, maker->stacks,
+            roundState = std::make_shared<RoundState>(maker->button, maker->street, maker->auction, maker->bids, maker->pips, maker->stacks,
                                                       maker->hands, revisedDeck, maker->previousState);
             break;
           }
@@ -133,9 +148,9 @@ public:
             auto revisedHands = maker->hands;
             revisedHands[1 - active] = {cards[0], cards[1]};
             // rebuild history
-            roundState = std::make_shared<RoundState>(maker->button, maker->street, maker->pips, maker->stacks,
+            roundState = std::make_shared<RoundState>(maker->button, maker->street, maker->auction, maker->bids, maker->pips, maker->stacks,
                                                       revisedHands, maker->deck, maker->previousState);
-            roundState = std::make_shared<TerminalState>(std::array<int, 2>{0, 0}, roundState);
+            roundState = std::make_shared<TerminalState>(std::array<int, 2>{0, 0}, maker->bids, roundState);
             break;
           }
           case 'D': {
@@ -145,6 +160,7 @@ public:
             deltas[1 - active] = -1 * delta;
             roundState = std::make_shared<TerminalState>(
                 std::move(deltas),
+                std::array<std::optional<int>, 2>{0, 0},
                 std::static_pointer_cast<const TerminalState>(roundState)
                     ->previousState);
             gameInfo = std::make_shared<GameInfo>(

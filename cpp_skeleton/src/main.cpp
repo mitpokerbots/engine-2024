@@ -3,6 +3,8 @@
 #include <skeleton/runner.h>
 #include <skeleton/states.h>
 
+#include <random>
+
 using namespace pokerbots::skeleton;
 
 struct Bot {
@@ -47,22 +49,37 @@ struct Bot {
   */
   Action getAction(GameInfoPtr gameState, RoundStatePtr roundState, int active) {
     auto legalActions = roundState->legalActions();  // the actions you are allowed to take
-    // int street = roundState->street;  // 0, 3, 4, or 5 representing pre-flop, flop, turn, or river respectively
-    // auto myCards = roundState->hands[active];  // your cards
-    // auto boardCards = roundState->deck;  // the board cards
-    // int myPip = roundState->pips[active];  // the number of chips you have contributed to the pot this round of betting
-    // int oppPip = roundState->pips[1-active];  // the number of chips your opponent has contributed to the pot this round of betting
-    // int myStack = roundState->stacks[active];  // the number of chips you have remaining
-    // int oppStack = roundState->stacks[1-active];  // the number of chips your opponent has remaining
-    // int continueCost = oppPip - myPip;  // the number of chips needed to stay in the pot
-    // int myContribution = STARTING_STACK - myStack;  // the number of chips you have contributed to the pot
-    // int oppContribution = STARTING_STACK - oppStack;  // the number of chips your opponent has contributed to the pot
-    // if (legalActions.find(Action::Type::RAISE) != legalActions.end()) {
-    //   auto raiseBounds = roundState->raiseBounds();  // the smallest and largest numbers of chips for a legal bet/raise
-    //   int minCost = raiseBounds[0] - myPip;  // the cost of a minimum bet/raise
-    //   int maxCost = raiseBounds[1] - myPip;  // the cost of a maximum bet/raise
-    // }
-    if (legalActions.find(Action::Type::CHECK) != legalActions.end()) {  // check-call
+    int street = roundState->street;  // 0, 3, 4, or 5 representing pre-flop, flop, turn, or river respectively
+    auto myCards = roundState->hands[active];  // your cards
+    auto boardCards = roundState->deck;  // the board cards
+    int myPip = roundState->pips[active];  // the number of chips you have contributed to the pot this round of betting
+    int oppPip = roundState->pips[1-active];  // the number of chips your opponent has contributed to the pot this round of betting
+    int myStack = roundState->stacks[active];  // the number of chips you have remaining
+    int oppStack = roundState->stacks[1-active];  // the number of chips your opponent has remaining
+    int continueCost = oppPip - myPip;  // the number of chips needed to stay in the pot
+    int myContribution = STARTING_STACK - myStack;  // the number of chips you have contributed to the pot
+    int oppContribution = STARTING_STACK - oppStack;  // the number of chips your opponent has contributed to the pot
+    int minCost = 0;
+    int maxCost = 0;
+    if (legalActions.find(Action::Type::RAISE) != legalActions.end()) {
+      auto raiseBounds = roundState->raiseBounds();  // the smallest and largest numbers of chips for a legal bet/raise
+      minCost = raiseBounds[0] - myPip;  // the cost of a minimum bet/raise
+      maxCost = raiseBounds[1] - myPip;  // the cost of a maximum bet/raise
+    }
+    std::random_device rd;
+    std::mt19937 gen(rd()); // Mersenne Twister engine
+
+    // Define a distribution (for example, integers between 1 and 10)
+    std::uniform_int_distribution<int> distribution(0, 10);
+    std::uniform_int_distribution<int> raise_distribution(minCost, maxCost);
+
+    if (legalActions.find(Action::Type::BID) != legalActions.end()) {  // random bid
+      return {Action::Type::BID, distribution(gen)};
+    }
+    if (legalActions.find(Action::Type::CHECK) != legalActions.end() && distribution(gen) > 3) { // high chance of betting or raising, if allowed
+      return {Action::Type::RAISE, raise_distribution(gen)};
+    }
+    if (legalActions.find(Action::Type::CHECK) != legalActions.end()) {  // otherwise, check-call
       return {Action::Type::CHECK};
     }
     return {Action::Type::CALL};
