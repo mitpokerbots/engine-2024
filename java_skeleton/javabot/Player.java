@@ -10,6 +10,7 @@ import javabot.skeleton.Bot;
 import javabot.skeleton.Runner;
 
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.lang.Integer;
 import java.lang.String;
@@ -67,25 +68,36 @@ public class Player implements Bot {
      */
     public Action getAction(GameState gameState, RoundState roundState, int active) {
         Set<ActionType> legalActions = roundState.legalActions();  // the actions you are allowed to take
-        //int street = roundState.street;  // 0, 3, 4, or 5 representing pre-flop, flop, turn, or river respectively
+        int street = roundState.street;  // 0, 3, 4, or 5 representing pre-flop, flop, turn, or river respectively
         //List<String> myCards = roundState.hands.get(active);  // your cards
         //List<String> boardCards = roundState.deck;  // the board cards
-        //int myPip = roundState.pips.get(active);  // the number of chips you have contributed to the pot this round of betting
+        int myPip = roundState.pips.get(active);  // the number of chips you have contributed to the pot this round of betting
         //int oppPip = roundState.pips.get(1-active);  // the number of chips your opponent has contributed to the pot this round of betting
         //int myStack = roundState.stacks.get(active);  // the number of chips you have remaining
         //int oppStack = roundState.stacks.get(1-active);  // the number of chips your opponent has remaining
         //int continueCost = oppPip - myPip;  // the number of chips needed to stay in the pot
         //int myContribution = State.STARTING_STACK - myStack;  // the number of chips you have contributed to the pot
         //int oppContribution = State.STARTING_STACK - oppStack;  // the number of chips your opponent has contributed to the pot
-        //if (legalActions.contains(ActionType.RAISE_ACTION_TYPE)) {
-        //    List<Integer> raiseBounds = roundState.raiseBounds();  // the smallest and largest numbers of chips for a legal bet/raise
-        //    int minCost = raiseBounds.get(0) - myPip;  // the cost of a minimum bet/raise
-        //    int maxCost = raiseBounds.get(1) - myPip;  // the cost of a maximum bet/raise
-        //}
-        if (legalActions.contains(ActionType.CHECK_ACTION_TYPE)) {  // check-call
+        int minCost = 10;
+        int maxCost = 20;
+        if (legalActions.contains(ActionType.RAISE_ACTION_TYPE)) {
+           List<Integer> raiseBounds = roundState.raiseBounds();  // the smallest and largest numbers of chips for a legal bet/raise
+           minCost = raiseBounds.get(0) - myPip;  // the cost of a minimum bet/raise
+           maxCost = raiseBounds.get(1) - myPip;  // the cost of a maximum bet/raise
+        }
+        Random rand = new Random();
+        if (legalActions.contains(ActionType.BID_ACTION_TYPE)) { // Random bid between 0 and 9
+            return new Action(ActionType.BID_ACTION_TYPE, rand.nextInt(10));
+        }
+        if (legalActions.contains(ActionType.RAISE_ACTION_TYPE)) {
+            if (rand.nextInt(10) > 5) {
+                return new Action(ActionType.RAISE_ACTION_TYPE, rand.nextInt(maxCost - minCost + 1) + minCost); // Random legal raise.
+            }
+        }
+        if (legalActions.contains(ActionType.CHECK_ACTION_TYPE)) {  // Check
             return new Action(ActionType.CHECK_ACTION_TYPE);
         }
-        return new Action(ActionType.CALL_ACTION_TYPE);
+        return new Action(ActionType.CALL_ACTION_TYPE); // Call if can't check
     }
 
     /**

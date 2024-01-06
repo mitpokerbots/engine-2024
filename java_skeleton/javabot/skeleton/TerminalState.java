@@ -9,10 +9,12 @@ import java.lang.Integer;
  */
 public class TerminalState extends State {
     public final List<Integer> deltas;
+    public final List<Integer> bids;
     public final State previousState;
 
-    public TerminalState(List<Integer> deltas, State previousState) {
+    public TerminalState(List<Integer> deltas, List<Integer> bids, State previousState) {
         this.deltas = Collections.unmodifiableList(deltas);
+        this.bids = Collections.unmodifiableList(bids);
         this.previousState = previousState;
     }
 }

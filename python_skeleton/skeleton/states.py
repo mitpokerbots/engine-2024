@@ -59,7 +59,7 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
         if self.street == 5:
             return self.showdown()
         if self.street == 0:
-            return RoundState(1, 3, True, self.bids, self.pips, self.stacks, self.hands, self.deck, self)
+            return RoundState(1, 3, True, self.bids, [0, 0], self.stacks, self.hands, self.deck, self)
         # new_street = 3 if self.street == 0 else self.street + 1
         return RoundState(1, self.street + 1, False, self.bids, [0, 0], self.stacks, self.hands, self.deck, self)
 

@@ -66,7 +66,7 @@ public class Runner {
      */
     public void run() throws IOException {
         GameState gameState = new GameState(0, (float)0., 1);
-        State roundState = new RoundState(0, 0, Arrays.asList(0, 0), Arrays.asList(0, 0),
+        State roundState = new RoundState(0, 0, false, Arrays.asList(null, null), Arrays.asList(0, 0), Arrays.asList(0, 0),
                                           Arrays.asList(Arrays.asList(""), Arrays.asList("")),
                                           Arrays.asList(""), null);
         int active = 0;
@@ -94,11 +94,12 @@ public class Runner {
                         );
                         hands.set(active, Arrays.asList(cards[0], cards[1]));
                         hands.set(1 - active, Arrays.asList("", ""));
+                        List<Integer> bids = Arrays.asList(null, null);
                         List<String> deck = new ArrayList<String>(Arrays.asList("", "", "", "", ""));
                         List<Integer> pips = Arrays.asList(State.SMALL_BLIND, State.BIG_BLIND);
                         List<Integer> stacks = Arrays.asList(State.STARTING_STACK - State.SMALL_BLIND,
                                                              State.STARTING_STACK - State.BIG_BLIND);
-                        roundState = new RoundState(0, 0, pips, stacks, hands, deck, null);
+                        roundState = new RoundState(0, 0, false, bids, pips, stacks, hands, deck, null);
                         if (roundFlag) {
                             this.pokerbot.handleNewRound(gameState, (RoundState)roundState, active);
                             roundFlag = false;
@@ -127,6 +128,21 @@ public class Runner {
                                                                                  Integer.parseInt(leftover)));
                         break;
                     }
+                    case 'N': {
+                        String[] cards = leftover.split(",");
+                        List<List<String>> hands = new ArrayList<List<String>>(
+                            Arrays.asList(
+                                new ArrayList<String>(),
+                                new ArrayList<String>()
+                            )
+                        );
+                        hands.set(active, Arrays.asList(cards[0], cards[1]));
+                        hands.set(1 - active, Arrays.asList("", ""));
+                        RoundState maker = (RoundState)roundState;
+                        roundState = new RoundState(maker.button, maker.street, maker.auction, maker.bids, maker.pips, maker.stacks,
+                                                    maker.hands, new ArrayList<String>(), maker.previousState);
+                        break;
+                    }
                     case 'B': {
                         String[] cards = leftover.split(",");
                         List<String> revisedDeck = new ArrayList<String>(Arrays.asList("", "", "", "", ""));
@@ -134,7 +150,7 @@ public class Runner {
                             revisedDeck.set(i, cards[i]);
                         }
                         RoundState maker = (RoundState)roundState;
-                        roundState = new RoundState(maker.button, maker.street, maker.pips, maker.stacks,
+                        roundState = new RoundState(maker.button, maker.street, maker.auction, maker.bids, maker.pips, maker.stacks,
                                                     maker.hands, revisedDeck, maker.previousState);
                         break;
                     }
@@ -146,16 +162,17 @@ public class Runner {
                         List<List<String>> revisedHands = new ArrayList<List<String>>(maker.hands);
                         revisedHands.set(1 - active, Arrays.asList(cards[0], cards[1]));
                         // rebuild history
-                        roundState = new RoundState(maker.button, maker.street, maker.pips, maker.stacks,
+                        roundState = new RoundState(maker.button, maker.street, maker.auction, maker.bids, maker.pips, maker.stacks,
                                                     revisedHands, maker.deck, maker.previousState);
-                        roundState = new TerminalState(Arrays.asList(0, 0), roundState);
+                        
+                        roundState = new TerminalState(Arrays.asList(0, 0), /*TODO: should be roundState.bids */ Arrays.asList(0, 0), roundState);
                         break;
                     }
                     case 'D': {
                         int delta = Integer.parseInt(leftover);
                         List<Integer> deltas = new ArrayList<Integer>(Arrays.asList(-1 * delta, -1 * delta));
                         deltas.set(active, delta);
-                        roundState = new TerminalState(deltas, ((TerminalState)roundState).previousState);
+                        roundState = new TerminalState(deltas, Arrays.asList(0, 0), ((TerminalState)roundState).previousState);
                         gameState = new GameState(gameState.bankroll + delta, gameState.gameClock, gameState.roundNum);
                         this.pokerbot.handleRoundOver(gameState, (TerminalState)roundState, active);
                         gameState = new GameState(gameState.bankroll, gameState.gameClock, gameState.roundNum + 1);
