@@ -98,13 +98,15 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
             return {BidAction}
         active = self.button % 2
         continue_cost = self.pips[1-active] - self.pips[active]
+        print(continue_cost, self.pips)
         if continue_cost == 0:
+            print("continue cost was zero", continue_cost, self.pips)
             # we can only raise the stakes if both players can afford it
             bets_forbidden = (self.stacks[0] == 0 or self.stacks[1] == 0)
             return {CheckAction} if bets_forbidden else {CheckAction, RaiseAction}
         # continue_cost > 0
         # similarly, re-raising is only allowed if both players can afford it
-        raises_forbidden = (continue_cost == self.stacks[active] or self.stacks[1-active] == 0)
+        raises_forbidden = (continue_cost >= self.stacks[active] or self.stacks[1-active] == 0)
         return {FoldAction, CallAction} if raises_forbidden else {FoldAction, CallAction, RaiseAction}
     
         # TODO: Checking if calling or bidding is legal?
@@ -118,6 +120,11 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
         max_contribution = min(self.stacks[active], self.stacks[1-active] + continue_cost)
         min_contribution = min(max_contribution, continue_cost + max(continue_cost, BIG_BLIND))
         return (self.pips[active] + min_contribution, self.pips[active] + max_contribution)
+    
+    # 400 400
+    # 398 398
+    # 398 395
+    # 
 
     def bid_bounds(self):
         '''
@@ -135,7 +142,7 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
         if self.street == 5:
             return self.showdown()
         if self.street == 0:        # immediately after flop is dealt, we enter the auction
-            return RoundState(1, 3, True, self.bids, self.pips, self.stacks, self.hands, self.deck, self)
+            return RoundState(1, 3, True, self.bids, [0, 0], self.stacks, self.hands, self.deck, self)
         # new_street = 3 if self.street == 0 else self.street + 1
         # return RoundState(1, new_street, [0, 0], self.stacks, self.hands, self.deck, self)
         return RoundState(1, self.street + 1, False, self.bids, [0, 0], self.stacks, self.hands, self.deck, self)
@@ -149,7 +156,7 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
             delta = self.stacks[0] - STARTING_STACK if active == 0 else STARTING_STACK - self.stacks[1]
             return TerminalState([delta, -delta], self.bids, self)
         if isinstance(action, CallAction):
-            if self.button == 0:  # sb calls bb
+            if self.button == 0:  # sb calls bb preflop
                 return RoundState(1, 0, self.auction, self.bids, [BIG_BLIND] * 2, [STARTING_STACK - BIG_BLIND] * 2, self.hands, self.deck, self)
             # both players acted
             new_pips = list(self.pips)
@@ -176,7 +183,7 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
                     new_stacks[0] -= self.bids[0]
                     new_stacks[1] -= self.bids[1]
 
-                    return RoundState(1, self.street, False, self.bids, self.pips, new_stacks, self.hands, self.deck, self)
+                    state = RoundState(1, self.street, False, self.bids, self.pips, new_stacks, self.hands, self.deck, self)
                 else:
                 # case in which bids are not equal
                     winner = self.bids.index(max(self.bids))
@@ -184,16 +191,18 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
                     new_stacks = list(self.stacks)
                     new_stacks[winner] -= self.bids[1 - winner]
 
-                    return RoundState(1, self.street, False, self.bids, self.pips, new_stacks, self.hands, self.deck, self)
+                    state = RoundState(1, self.street, False, self.bids, self.pips, new_stacks, self.hands, self.deck, self)
+                return state.proceed_street()
             else:
-                return RoundState(self.button + 1, 3, True, self.bids, self.pips, self.stacks, self.hands, self.deck, self)
-        # isinstance(action, RaiseAction)
-        new_pips = list(self.pips)
-        new_stacks = list(self.stacks)
-        contribution = action.amount - new_pips[active]
-        new_stacks[active] -= contribution
-        new_pips[active] += contribution
-        return RoundState(self.button + 1, self.street, self.auction, self.bids, new_pips, new_stacks, self.hands, self.deck, self)
+                return RoundState(self.button + 1, self.street, True, self.bids, self.pips, self.stacks, self.hands, self.deck, self)
+        if isinstance(action, RaiseAction):
+            new_pips = list(self.pips)
+            new_stacks = list(self.stacks)
+            contribution = action.amount - new_pips[active]
+            new_stacks[active] -= contribution
+            new_pips[active] += contribution
+            return RoundState(self.button + 1, self.street, self.auction, self.bids, new_pips, new_stacks, self.hands, self.deck, self)
+        
 
 
 class Player():
@@ -320,6 +329,7 @@ class Player():
         At the end of the round, we request a CheckAction from the pokerbot.
         '''
         legal_actions = round_state.legal_actions() if isinstance(round_state, RoundState) else {CheckAction}
+        print("legal actions were", legal_actions)
         if self.socketfile is not None and self.game_clock > 0.:
             clause = ''
             try:
@@ -336,20 +346,27 @@ class Player():
                 if self.game_clock <= 0.:
                     raise socket.timeout
                 action = DECODE[clause[0]]
+                print(legal_actions)
                 if action in legal_actions:
                     if clause[0] == 'R':
                         amount = int(clause[1:])
                         min_raise, max_raise = round_state.raise_bounds()
+                        print("this was a raise action of", amount, "with bounds of", min_raise, max_raise)
                         if min_raise <= amount <= max_raise:
                             return action(amount)
-                    if clause[0] == 'A':
+                    elif clause[0] == 'A':
                         amount = int(clause[1:])
                         min_bid, max_bid = round_state.bid_bounds()
                         if min_bid <= amount <= max_bid:
                             return action(amount)
                     else:
                         return action()
-                game_log.append(self.name + ' attempted illegal ' + action.__name__)
+                if clause[0] == 'R':
+                    game_log.append(self.name + ' attempted illegal ' + action.__name__ + ' with amount ' + str(int(clause[1:])))
+                else:
+                    game_log.append(self.name + ' attempted illegal ' + action.__name__)
+                    game_log.append('pips were ' + str(round_state.pips))
+
             except socket.timeout:
                 error_message = self.name + ' ran out of time'
                 game_log.append(error_message)
