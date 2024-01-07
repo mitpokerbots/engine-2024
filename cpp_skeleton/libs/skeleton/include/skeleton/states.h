@@ -35,12 +35,12 @@ struct RoundState : public State {
   std::array<std::optional<int>, 2> bids;
   std::array<int, 2> pips;
   std::array<int, 2> stacks;
-  std::array<std::array<std::string, 2>, 2> hands;
+  std::array<std::array<std::string, 3>, 2> hands;
   std::array<std::string, 5> deck;
   StatePtr previousState;
 
   RoundState(int button, int street, bool auction, std::array<std::optional<int>, 2> bids, std::array<int, 2> pips,  std::array<int, 2> stacks,
-             std::array<std::array<std::string, 2>, 2> hands, std::array<std::string, 5> deck,
+             std::array<std::array<std::string, 3>, 2> hands, std::array<std::string, 5> deck,
              StatePtr previousState)
       : button(button), street(street), auction(auction), bids(std::move(bids)), pips(std::move(pips)), stacks(std::move(stacks)),
         hands(std::move(hands)), deck(std::move(deck)),

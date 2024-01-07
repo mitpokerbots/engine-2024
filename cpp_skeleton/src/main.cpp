@@ -70,6 +70,7 @@ struct Bot {
     for (auto card : myCards) {
         std::cout << card << " ";
     }
+    std::cout << "the pips and stacks are " << myPip << " " << oppPip << " " << myStack << " " << oppStack;
 
     std::cout << std::endl;
     std::random_device rd;

@@ -51,7 +51,7 @@ public:
     GameInfoPtr gameInfo = std::make_shared<GameInfo>(0, 0.0, 1);
     StatePtr roundState = std::make_shared<RoundState>(
         0, 0, false, std::array<std::optional<int>, 2>{std::nullopt, std::nullopt}, std::array<int, 2>{0, 0}, std::array<int, 2>{0, 0},
-        std::array<std::array<std::string, 2>, 2>{}, std::array<std::string, 5>{},
+        std::array<std::array<std::string, 3>, 2>{}, std::array<std::string, 5>{},
         nullptr);
     int active = 0;
     bool roundFlag = true;
@@ -73,7 +73,7 @@ public:
             std::vector<std::string> cards;
             boost::split(cards, leftover, boost::is_any_of(","));
 
-            std::array<std::array<std::string, 2>, 2> hands;
+            std::array<std::array<std::string, 3>, 2> hands;
             hands[active][0] = cards[0];
             hands[active][1] = cards[1];
             std::array<std::string, 5> deck;
@@ -115,12 +115,44 @@ public:
             break;
           }
           case 'N': {
-            std::vector<std::vector<std::string>> hands(2);
-            std::vector<int> stacks;
-            std::vector<std::optional<int>, 2> bids, active_hands;
+            // Split the leftover string
+            std::vector<std::string> stuff;
+            boost::split(stuff, leftover, boost::is_any_of("_"));
+
+            // Split the components
+            std::vector<std::string> stacks;
+            boost::split(stacks, stuff[0], boost::is_any_of(","));
+            
+            std::vector<std::string> bids;
+            boost::split(bids, stuff[1], boost::is_any_of(","));
+
+            std::vector<std::string> cards;
+            boost::split(cards, stuff[2], boost::is_any_of(","));
+
+            // Convert strings to integers
+            std::array<std::optional<int>, 2> bids_int;
+            std::array<int, 2> stacks_int;
+            for (int i = 0; i < 2; i++) {
+                bids_int[i] = std::stoi(bids[i]);
+                stacks_int[i] = std::stoi(stacks[i]);
+            }
+
+            // Create hands vector
+            std::array<std::array<std::string, 3>, 2> hands;
+
+            // Populate hands vector based on the length of cards
+            if (cards.size() == 3) {
+                hands[active] = {cards[0], cards[1], cards[2]};
+            } else {
+                hands[active] = {cards[0], cards[1]};
+            }
+
+            hands[1 - active] = {"", ""};
+
+
+            // Assuming RoundState constructor and member variables are defined
             auto maker = std::static_pointer_cast<const RoundState>(roundState);
-            roundState = std::make_shared<RoundState>(maker->button, maker->street, maker->auction, maker->bids, maker->pips, maker->stacks,
-                                                      maker->hands, newDeck, maker->previousState);
+            roundState = std::make_shared<RoundState>(maker->button, maker->street, maker->auction, bids_int, maker->pips, stacks_int, hands, std::array<std::string, 5>(), maker->previousState);
             break;
           }
           case 'B': {
