@@ -38,7 +38,7 @@ class Runner():
             code = 'C'
         elif isinstance(action, CheckAction):
             code = 'K'
-        elif isinstance(action, BidAction):             # added BidAction
+        elif isinstance(action, BidAction): 
             code = 'A' + str(action.amount)
         else:  # isinstance(action, RaiseAction)
             code = 'R' + str(action.amount)

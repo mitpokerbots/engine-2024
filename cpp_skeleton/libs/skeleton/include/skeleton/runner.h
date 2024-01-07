@@ -69,7 +69,6 @@ public:
             break;
           }
           case 'H': {
-            // TODO: FIX THIS. HANDS MUST BE UPDATED.
             std::vector<std::string> cards;
             boost::split(cards, leftover, boost::is_any_of(","));
 
@@ -148,7 +147,6 @@ public:
             }
 
             hands[1 - active] = {"", ""};
-
 
             // Assuming RoundState constructor and member variables are defined
             auto maker = std::static_pointer_cast<const RoundState>(roundState);

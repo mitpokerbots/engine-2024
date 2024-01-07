@@ -48,6 +48,8 @@ struct Bot {
     @return Your action.
   */
   Action getAction(GameInfoPtr gameState, RoundStatePtr roundState, int active) {
+
+    // May be useful, but you can choose to not use.
     auto legalActions = roundState->legalActions();  // the actions you are allowed to take
     int street = roundState->street;  // 0, 3, 4, or 5 representing pre-flop, flop, turn, or river respectively
     auto myCards = roundState->hands[active];  // your cards
@@ -66,17 +68,10 @@ struct Bot {
       minCost = raiseBounds[0] - myPip;  // the cost of a minimum bet/raise
       maxCost = raiseBounds[1] - myPip;  // the cost of a maximum bet/raise
     }
-    std::cout << "My Cards: ";
-    for (auto card : myCards) {
-        std::cout << card << " ";
-    }
-    std::cout << "the pips and stacks are " << myPip << " " << oppPip << " " << myStack << " " << oppStack;
 
-    std::cout << std::endl;
+    // Basic bot that randomly bids or raises, or just checks and calls.
     std::random_device rd;
     std::mt19937 gen(rd()); // Mersenne Twister engine
-
-    // Define a distribution (for example, integers between 1 and 10)
     std::uniform_int_distribution<int> distribution(0, 10);
     std::uniform_int_distribution<int> raise_distribution(minCost, maxCost);
 
