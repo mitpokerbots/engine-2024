@@ -69,12 +69,12 @@ public class Player implements Bot {
     public Action getAction(GameState gameState, RoundState roundState, int active) {
         Set<ActionType> legalActions = roundState.legalActions();  // the actions you are allowed to take
         int street = roundState.street;  // 0, 3, 4, or 5 representing pre-flop, flop, turn, or river respectively
-        //List<String> myCards = roundState.hands.get(active);  // your cards
+        List<String> myCards = roundState.hands.get(active);  // your cards
         //List<String> boardCards = roundState.deck;  // the board cards
         int myPip = roundState.pips.get(active);  // the number of chips you have contributed to the pot this round of betting
-        //int oppPip = roundState.pips.get(1-active);  // the number of chips your opponent has contributed to the pot this round of betting
-        //int myStack = roundState.stacks.get(active);  // the number of chips you have remaining
-        //int oppStack = roundState.stacks.get(1-active);  // the number of chips your opponent has remaining
+        int oppPip = roundState.pips.get(1-active);  // the number of chips your opponent has contributed to the pot this round of betting
+        int myStack = roundState.stacks.get(active);  // the number of chips you have remaining
+        int oppStack = roundState.stacks.get(1-active);  // the number of chips your opponent has remaining
         //int continueCost = oppPip - myPip;  // the number of chips needed to stay in the pot
         //int myContribution = State.STARTING_STACK - myStack;  // the number of chips you have contributed to the pot
         //int oppContribution = State.STARTING_STACK - oppStack;  // the number of chips your opponent has contributed to the pot
@@ -85,6 +85,9 @@ public class Player implements Bot {
            minCost = raiseBounds.get(0) - myPip;  // the cost of a minimum bet/raise
            maxCost = raiseBounds.get(1) - myPip;  // the cost of a maximum bet/raise
         }
+
+        System.out.println(String.join(", ", myCards));
+        System.out.println("Stacks are " + myStack + " and " + oppStack);
         Random rand = new Random();
         if (legalActions.contains(ActionType.BID_ACTION_TYPE)) { // Random bid between 0 and 9
             return new Action(ActionType.BID_ACTION_TYPE, rand.nextInt(10));

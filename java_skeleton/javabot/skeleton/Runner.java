@@ -129,18 +129,33 @@ public class Runner {
                         break;
                     }
                     case 'N': {
-                        String[] cards = leftover.split(",");
+                        String[] stuff = leftover.split("_");
+                        String[] stacks = stuff[0].split(",");
+                        String[] bids = stuff[1].split(",");
+                        String[] cards = stuff[2].split(",");
+                        List<Integer> bids_int = Arrays.asList(0, 0);
+                        List<Integer> stacks_int = Arrays.asList(0, 0);
                         List<List<String>> hands = new ArrayList<List<String>>(
                             Arrays.asList(
                                 new ArrayList<String>(),
                                 new ArrayList<String>()
                             )
                         );
-                        hands.set(active, Arrays.asList(cards[0], cards[1]));
+                        if (cards.length == 3) {
+                            hands.set(active, Arrays.asList(cards[0], cards[1], cards[2]));
+                        }
+                        else {
+                            hands.set(active, Arrays.asList(cards[0], cards[1]));
+                        }
+                        
                         hands.set(1 - active, Arrays.asList("", ""));
+                        for (int i = 0; i < 2; i++) {
+                            bids_int.set(i, Integer.parseInt(bids[i]));
+                            stacks_int.set(i, Integer.parseInt(stacks[i]));
+                        }
                         RoundState maker = (RoundState)roundState;
-                        roundState = new RoundState(maker.button, maker.street, maker.auction, maker.bids, maker.pips, maker.stacks,
-                                                    maker.hands, new ArrayList<String>(), maker.previousState);
+                        roundState = new RoundState(maker.button, maker.street, maker.auction, bids_int, maker.pips, stacks_int,
+                                                    hands, new ArrayList<String>(), maker.previousState);
                         break;
                     }
                     case 'B': {
