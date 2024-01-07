@@ -98,9 +98,7 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
             return {BidAction}
         active = self.button % 2
         continue_cost = self.pips[1-active] - self.pips[active]
-        print(continue_cost, self.pips)
         if continue_cost == 0:
-            print("continue cost was zero", continue_cost, self.pips)
             # we can only raise the stakes if both players can afford it
             bets_forbidden = (self.stacks[0] == 0 or self.stacks[1] == 0)
             return {CheckAction} if bets_forbidden else {CheckAction, RaiseAction}
@@ -108,8 +106,6 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
         # similarly, re-raising is only allowed if both players can afford it
         raises_forbidden = (continue_cost >= self.stacks[active] or self.stacks[1-active] == 0)
         return {FoldAction, CallAction} if raises_forbidden else {FoldAction, CallAction, RaiseAction}
-    
-        # TODO: Checking if calling or bidding is legal?
 
     def raise_bounds(self):
         '''
@@ -117,14 +113,10 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
         '''
         active = self.button % 2
         continue_cost = self.pips[1-active] - self.pips[active]
+        # can not raise to a value opponent can't afford.
         max_contribution = min(self.stacks[active], self.stacks[1-active] + continue_cost)
         min_contribution = min(max_contribution, continue_cost + max(continue_cost, BIG_BLIND))
         return (self.pips[active] + min_contribution, self.pips[active] + max_contribution)
-    
-    # 400 400
-    # 398 398
-    # 398 395
-    # 
 
     def bid_bounds(self):
         '''
@@ -174,7 +166,6 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
         if isinstance(action, BidAction):
             self.bids[active] = action.amount
             if None not in self.bids:       # both players have submitted bids and we deal the extra card
-                # self.auction = False      # don't need this line?
                 # case in which bids are equal, both players receive card
                 if self.bids[0] == self.bids[1]:
                     self.hands[0].append(self.deck.peek(48)[-1])
@@ -182,7 +173,6 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
                     new_stacks = list(self.stacks)
                     new_stacks[0] -= self.bids[0]
                     new_stacks[1] -= self.bids[1]
-
                     state = RoundState(1, self.street, False, self.bids, self.pips, new_stacks, self.hands, self.deck, self)
                 else:
                 # case in which bids are not equal
@@ -190,7 +180,6 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
                     self.hands[winner].append(self.deck.peek(48)[-1])
                     new_stacks = list(self.stacks)
                     new_stacks[winner] -= self.bids[1 - winner]
-
                     state = RoundState(1, self.street, False, self.bids, self.pips, new_stacks, self.hands, self.deck, self)
                 return state.proceed_street()
             else:
@@ -358,11 +347,10 @@ class Player():
                             return action(amount)
                     else:
                         return action()
-                if clause[0] == 'R':
+                if clause[0] in ('R', 'A'):
                     game_log.append(self.name + ' attempted illegal ' + action.__name__ + ' with amount ' + str(int(clause[1:])))
                 else:
                     game_log.append(self.name + ' attempted illegal ' + action.__name__)
-                    game_log.append('pips were ' + str(round_state.pips))
 
             except socket.timeout:
                 error_message = self.name + ' ran out of time'
@@ -408,7 +396,6 @@ class Game():
         '''
         Incorporates RoundState information into the game log and player messages.
         '''
-        print("the street and action is", round_state.street, round_state.button, "auction is", round_state.auction)
         if round_state.street == 0 and round_state.button == 0:
             self.log.append('{} posts the blind of {}'.format(players[0].name, SMALL_BLIND))
             self.log.append('{} posts the blind of {}'.format(players[1].name, BIG_BLIND))
@@ -426,7 +413,6 @@ class Game():
             self.player_messages[1].append(compressed_board)
         # engine communicates cards after the auction
         if round_state.street == 4 and round_state.auction is False and round_state.button == 1: 
-            print("-------------------------------------")
             self.player_messages[0].append('P0')
             self.player_messages[0].append('N' + ','.join([str(x) for x in round_state.stacks]) + '_' + ','.join([str(x) for x in round_state.bids]) + '_' + CCARDS(round_state.hands[0]))
             self.player_messages[1].append('P1')
