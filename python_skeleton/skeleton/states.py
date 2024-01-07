@@ -33,7 +33,6 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
         active = self.button % 2
         continue_cost = self.pips[1-active] - self.pips[active]
         if continue_cost == 0:
-            print("inside states.py the continue cost was 0")
             # we can only raise the stakes if both players can afford it
             bets_forbidden = (self.stacks[0] == 0 or self.stacks[1] == 0)
             return {CheckAction} if bets_forbidden else {CheckAction, RaiseAction}
@@ -60,12 +59,9 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
             return self.showdown()
         if self.street == 0:
             return RoundState(1, 3, True, self.bids, [0, 0], self.stacks, self.hands, self.deck, self)
-        # new_street = 3 if self.street == 0 else self.street + 1
         return RoundState(1, self.street + 1, False, self.bids, [0, 0], self.stacks, self.hands, self.deck, self)
 
 
-    #TODO: issue right now is how to proceed with the BidAction for only the single bot in 
-    # states.py. We can't deal from the deck as deck is not provided to players. 
     def proceed(self, action):
         '''
         Advances the game tree by one action performed by the active player.
@@ -93,26 +89,9 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
         if isinstance(action, BidAction):
             self.bids[active] = True
             if None not in self.bids:       # both players have submitted bids and we deal the extra card
-                # self.auction = False      # don't need this line?
-                # case in which bids are equal, both players receive card
-                print("the deck is", self.deck)
-                if self.bids[0] == self.bids[1]:
-                    # self.hands[0].append(self.deck.deal(1)[0]) # can't do this because players can't access deck.
-                    # self.hands[1].append(self.deck.deal(1)[0])
-                    # new_stacks = list(self.stacks)
-                    # new_stacks[0] -= self.bids[0]
-                    # new_stacks[1] -= self.bids[1]
-                    state = RoundState(1, 3, False, self.bids, self.pips, self.stacks, self.hands, self.deck, self)
-                else:
-                # case in which bids are not equal
-                    # winner = self.bids.index(max(self.bids))
-                    # self.hands[winner].append(self.deck.deal(1)[0])
-                    # new_stacks = list(self.stacks)
-                    # new_stacks[winner] -= self.bids[1-winner]
-                    state = RoundState(1, 3, False, self.bids, self.pips, self.stacks, self.hands, self.deck, self)
-                # return RoundState(1, 3, False, self.bids, self.pips, new_stacks, self.hands, self.deck, self)
+                state = RoundState(1, 3, False, self.bids, self.pips, self.stacks, self.hands, self.deck, self)
                 return state.proceed_street()
-            else:
+            else: # other player's turn to bid
                 return RoundState(self.button + 1, 3, True, self.bids, self.pips, self.stacks, self.hands, self.deck, self)
         # isinstance(action, RaiseAction)
         new_pips = list(self.pips)

@@ -453,11 +453,6 @@ class Game():
             self.player_messages[1].append('O' + CCARDS(previous_state.hands[0]))
         self.log.append('{} awarded {}'.format(players[0].name, round_state.deltas[0]))
         self.log.append('{} awarded {}'.format(players[1].name, round_state.deltas[1]))
-        # TODO: implement logging for bids. the winner will clearly know during the round how 
-        # much their opponent paid based on how much they end up paying. however, there is a
-        # question of whether the loser should learn what the winner bid. i don't think the loser
-        # should learn during the round itself. but, the below implementation reports both bids in
-        # in the round log
         if None in round_state.bids:
             self.log.append('Players did not reach flop. No auction occured.')
         else:

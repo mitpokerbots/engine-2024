@@ -77,7 +77,7 @@ class Runner():
                     round_state = round_state.proceed(CheckAction())
                 elif clause[0] == 'R':
                     round_state = round_state.proceed(RaiseAction(int(clause[1:])))
-                elif clause[0] == 'A':     # TODO: check if anything needs to be added here
+                elif clause[0] == 'A': 
                     round_state = round_state.proceed(BidAction(int(clause[1:])))
                 elif clause[0] == 'N':
                     hands = [[], []]
