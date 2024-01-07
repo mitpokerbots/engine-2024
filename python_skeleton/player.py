@@ -79,7 +79,7 @@ class Player(Bot):
         '''
         legal_actions = round_state.legal_actions()  # the actions you are allowed to take
         #street = round_state.street  # 0, 3, 4, or 5 representing pre-flop, flop, turn, or river respectively
-        #my_cards = round_state.hands[active]  # your cards
+        my_cards = round_state.hands[active]  # your cards
         #board_cards = round_state.deck[:street]  # the board cards
         my_pip = round_state.pips[active]  # the number of chips you have contributed to the pot this round of betting
         opp_pip = round_state.pips[1-active]  # the number of chips your opponent has contributed to the pot this round of betting
@@ -93,6 +93,7 @@ class Player(Bot):
         #    min_cost = min_raise - my_pip  # the cost of a minimum bet/raise
         #    max_cost = max_raise - my_pip  # the cost of a maximum bet/raise
         print(legal_actions)
+        print(my_cards)
         if RaiseAction in legal_actions:
             if random.random() > 0.5:
                 return RaiseAction((int(random.random()*3)+continue_cost)*2 + opp_pip)

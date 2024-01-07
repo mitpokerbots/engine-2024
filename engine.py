@@ -329,7 +329,6 @@ class Player():
         At the end of the round, we request a CheckAction from the pokerbot.
         '''
         legal_actions = round_state.legal_actions() if isinstance(round_state, RoundState) else {CheckAction}
-        print("legal actions were", legal_actions)
         if self.socketfile is not None and self.game_clock > 0.:
             clause = ''
             try:
@@ -346,12 +345,10 @@ class Player():
                 if self.game_clock <= 0.:
                     raise socket.timeout
                 action = DECODE[clause[0]]
-                print(legal_actions)
                 if action in legal_actions:
                     if clause[0] == 'R':
                         amount = int(clause[1:])
                         min_raise, max_raise = round_state.raise_bounds()
-                        print("this was a raise action of", amount, "with bounds of", min_raise, max_raise)
                         if min_raise <= amount <= max_raise:
                             return action(amount)
                     elif clause[0] == 'A':
@@ -411,6 +408,7 @@ class Game():
         '''
         Incorporates RoundState information into the game log and player messages.
         '''
+        print("the street and action is", round_state.street, round_state.button, "auction is", round_state.auction)
         if round_state.street == 0 and round_state.button == 0:
             self.log.append('{} posts the blind of {}'.format(players[0].name, SMALL_BLIND))
             self.log.append('{} posts the blind of {}'.format(players[1].name, BIG_BLIND))
@@ -427,7 +425,8 @@ class Game():
             self.player_messages[0].append(compressed_board)
             self.player_messages[1].append(compressed_board)
         # engine communicates cards after the auction
-        if round_state.street == 3 and round_state.auction is False and round_state.button == 1: 
+        if round_state.street == 4 and round_state.auction is False and round_state.button == 1: 
+            print("-------------------------------------")
             self.player_messages[0].append('P0')
             self.player_messages[0].append('N' + ','.join([str(x) for x in round_state.stacks]) + '_' + ','.join([str(x) for x in round_state.bids]) + '_' + CCARDS(round_state.hands[0]))
             self.player_messages[1].append('P1')

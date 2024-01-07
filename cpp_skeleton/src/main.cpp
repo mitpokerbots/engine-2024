@@ -66,6 +66,12 @@ struct Bot {
       minCost = raiseBounds[0] - myPip;  // the cost of a minimum bet/raise
       maxCost = raiseBounds[1] - myPip;  // the cost of a maximum bet/raise
     }
+    std::cout << "My Cards: ";
+    for (auto card : myCards) {
+        std::cout << card << " ";
+    }
+
+    std::cout << std::endl;
     std::random_device rd;
     std::mt19937 gen(rd()); // Mersenne Twister engine
 

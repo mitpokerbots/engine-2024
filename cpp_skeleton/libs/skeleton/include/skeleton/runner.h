@@ -69,6 +69,7 @@ public:
             break;
           }
           case 'H': {
+            // TODO: FIX THIS. HANDS MUST BE UPDATED.
             std::vector<std::string> cards;
             boost::split(cards, leftover, boost::is_any_of(","));
 
@@ -114,14 +115,9 @@ public:
             break;
           }
           case 'N': {
-            std::vector<std::string> cards;
-            boost::split(cards, leftover, boost::is_any_of(","));
-            std::array<std::array<std::string, 2>, 2> hands;
-            hands[active][0] = cards[0];
-            hands[active][1] = cards[1];
-            hands[1-active][0] = "";
-            hands[1-active][1] = "";
-            std::array<std::string, 5> newDeck; // not used
+            std::vector<std::vector<std::string>> hands(2);
+            std::vector<int> stacks;
+            std::vector<std::optional<int>, 2> bids, active_hands;
             auto maker = std::static_pointer_cast<const RoundState>(roundState);
             roundState = std::make_shared<RoundState>(maker->button, maker->street, maker->auction, maker->bids, maker->pips, maker->stacks,
                                                       maker->hands, newDeck, maker->previousState);
