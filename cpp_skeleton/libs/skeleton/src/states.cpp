@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <numeric>
 #include <optional>
+#include <sstream>
 
 #include <fmt/format.h>
 #include <fmt/ostream.h>
@@ -114,26 +115,42 @@ StatePtr RoundState::proceed(Action action) const {
   }
 }
 
+template <typename Container>
+std::string join(const Container& elements, const std::string& separator) {
+    std::stringstream ss;
+
+    auto it = elements.begin();
+    if (it != elements.end()) {
+        ss << *it++;
+    }
+
+    for (; it != elements.end(); ++it) {
+        ss << separator << *it;
+    }
+
+    return ss.str();
+}
+
 std::ostream &RoundState::doFormat(std::ostream &os) const {
   std::array<std::string, 2> formattedHands = {
       fmt::format(FMT_STRING("{}"),
-                  fmt::join(hands[0].begin(), hands[0].end(), "")),
+                  join(hands[0], "")),
       fmt::format(FMT_STRING("{}"),
-                  fmt::join(hands[1].begin(), hands[1].end(), ""))};
+                  join(hands[1], ""))};
 
   fmt::print(os,
              FMT_STRING("round(button={}, street={}, pips=[{}], stacks=[{}], hands=[{}], "
                         "deck=[{}])"),
-             button, street, fmt::join(pips.begin(), pips.end(), ", "),
-             fmt::join(stacks.begin(), stacks.end(), ", "),
-             fmt::join(formattedHands.begin(), formattedHands.end(), ","),
-             fmt::join(deck.begin(), deck.end(), ", "));
+             button, street, join(pips, ", "),
+             join(stacks, ", "),
+             join(formattedHands, ","),
+             join(deck, ", "));
   return os;
 }
 
 std::ostream &TerminalState::doFormat(std::ostream &os) const {
   fmt::print(os, FMT_STRING("terminal(deltas=[{}])"),
-             fmt::join(deltas.begin(), deltas.end(), ", "));
+             join(deltas, ", "));
   return os;
 }
 
