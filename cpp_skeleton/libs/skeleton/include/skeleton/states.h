@@ -3,6 +3,7 @@
 #include <iostream>
 #include <memory>
 #include <unordered_set>
+#include <optional>
 
 #include "actions.h"
 #include "constants.h"
