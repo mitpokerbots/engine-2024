@@ -83,25 +83,65 @@ public class Player implements Bot {
         int minCost = 10;
         int maxCost = 20;
         if (legalActions.contains(ActionType.RAISE_ACTION_TYPE)) {
-           List<Integer> raiseBounds = roundState.raiseBounds();  // the smallest and largest numbers of chips for a legal bet/raise
-           minCost = raiseBounds.get(0) - myPip;  // the cost of a minimum bet/raise
-           maxCost = raiseBounds.get(1) - myPip;  // the cost of a maximum bet/raise
+            List<Integer> raiseBounds = roundState.raiseBounds(); // the smallest and largest numbers of chips for a legal bet/raise
+            minCost = raiseBounds.get(0) - myPip; // the cost of a minimum bet/raise
+            maxCost = raiseBounds.get(1) - myPip; // the cost of a maximum bet/raise
         }
+        
+        // Basic bot with the following fixed behavior: 
+        // Tries checking if it's big blind, otherwise folds preflop.
+        // Always tries min raising if it's small blind preflop.
+        // Always tries bidding 1/3 of the pot. 
+        // Checks and min raises everything else.
 
-        // Basic bot that bids and raises randomly, or just checks and calls.
-        Random rand = new Random();
-        if (legalActions.contains(ActionType.BID_ACTION_TYPE)) { // Random bid between 0 and 9
-            return new Action(ActionType.BID_ACTION_TYPE, rand.nextInt(10));
-        }
-        if (legalActions.contains(ActionType.RAISE_ACTION_TYPE)) {
-            if (rand.nextInt(10) > 5) {
-                return new Action(ActionType.RAISE_ACTION_TYPE, rand.nextInt(maxCost - minCost + 1) + minCost); // Random legal raise.
+        if (street == 0) // for preflop
+        {
+            if (active == 0) { // in the case of small blind
+                if (legalActions.contains(ActionType.RAISE_ACTION_TYPE)) {
+                    return new Action(ActionType.RAISE_ACTION_TYPE, minCost);
+                }
+            } else { // in the case of big blind
+                if (legalActions.contains(ActionType.CHECK_ACTION_TYPE)) {
+                    return new Action(ActionType.CHECK_ACTION_TYPE);
+                } else {
+                    return new Action(ActionType.FOLD_ACTION_TYPE);
+                }
             }
         }
-        if (legalActions.contains(ActionType.CHECK_ACTION_TYPE)) {  // Check
-            return new Action(ActionType.CHECK_ACTION_TYPE);
+
+        if (legalActions.contains((ActionType.BID_ACTION_TYPE))) // for bidding
+        {
+            int totalPot = myContribution + oppContribution;
+            return new Action(ActionType.BID_ACTION_TYPE, Math.min(totalPot / 3, myStack)); // bids 1/3 pot or remaining stack
         }
-        return new Action(ActionType.CALL_ACTION_TYPE); // Call if can't check
+
+        if (legalActions.contains(ActionType.CHECK_ACTION_TYPE)) // for non preflop rounds
+        {
+            // try checking if possible, otherwise min raise, otherwise fold
+            return new Action(ActionType.CHECK_ACTION_TYPE);
+        } else if (legalActions.contains(ActionType.RAISE_ACTION_TYPE)) {
+            return new Action(ActionType.RAISE_ACTION_TYPE, minCost);
+        } else {
+            return new Action(ActionType.FOLD_ACTION_TYPE);
+        }
+
+
+        
+
+        // Basic bot that bids and raises randomly, or just checks and calls.
+        // Random rand = new Random();
+        // if (legalActions.contains(ActionType.BID_ACTION_TYPE)) { // Random bid between 0 and 9
+        //     return new Action(ActionType.BID_ACTION_TYPE, rand.nextInt(10));
+        // }
+        // if (legalActions.contains(ActionType.RAISE_ACTION_TYPE)) {
+        //     if (rand.nextInt(10) > 5) {
+        //         return new Action(ActionType.RAISE_ACTION_TYPE, rand.nextInt(maxCost - minCost + 1) + minCost); // Random legal raise.
+        //     }
+        // }
+        // if (legalActions.contains(ActionType.CHECK_ACTION_TYPE)) {  // Check
+        //     return new Action(ActionType.CHECK_ACTION_TYPE);
+        // }
+        // return new Action(ActionType.CALL_ACTION_TYPE); // Call if can't check
     }
 
     /**
