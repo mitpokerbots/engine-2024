@@ -44,7 +44,7 @@ std::array<int, 2> RoundState::raiseBounds() const {
   auto active = getActive(button);
   auto continueCost = pips[1-active] - pips[active];
   auto maxContribution = std::min(stacks[active], stacks[1-active] + continueCost);
-  auto minContribution = std::max(std::min(maxContribution, continueCost + std::max(continueCost, BIG_BLIND)), 2 * BIG_BLIND);
+  auto minContribution = std::min(maxContribution, continueCost + std::max(continueCost, BIG_BLIND));
   return {pips[active] + minContribution, pips[active] + maxContribution};
 }
 
