@@ -93,18 +93,11 @@ class Player(Bot):
            min_raise, max_raise = round_state.raise_bounds()  # the smallest and largest numbers of chips for a legal bet/raise
            min_cost = min_raise - my_pip  # the cost of a minimum bet/raise
            max_cost = max_raise - my_pip  # the cost of a maximum bet/raise
-
-        # Basic bot that does random raises and bids, or just checks and calls.
-        if RaiseAction in legal_actions:
-            if random.random() > 0.5:
-                return RaiseAction((int(random.random()*3)+continue_cost)*2 + opp_pip)
+        
         if CheckAction in legal_actions:
             return CheckAction()
         elif BidAction in legal_actions:
-            if active == 0:
-                return BidAction(int(random.random()*10))
-            else:
-                return BidAction(int(random.random()*2)+my_stack)
+            return BidAction(int(random.random()*my_stack)) # random bid between 0 and our stack
         return CallAction()
 
 

@@ -69,19 +69,15 @@ struct Bot {
       maxCost = raiseBounds[1] - myPip;  // the cost of a maximum bet/raise
     }
 
-    // Basic bot that randomly bids or raises, or just checks and calls.
+    // Basic bot that randomly bids or just checks/calls.
     std::random_device rd;
     std::mt19937 gen(rd()); // Mersenne Twister engine
-    std::uniform_int_distribution<int> distribution(0, 10);
-    std::uniform_int_distribution<int> raise_distribution(minCost, maxCost);
+    std::uniform_int_distribution<int> bid_distribution(0, myStack); // random bid between 0 and my stack
 
-    if (legalActions.find(Action::Type::BID) != legalActions.end()) {  // random bid
-      return {Action::Type::BID, distribution(gen)};
+    if (legalActions.find(Action::Type::BID) != legalActions.end()) {  
+      return {Action::Type::BID, bid_distribution(gen)}; // random bid
     }
-    if (legalActions.find(Action::Type::CHECK) != legalActions.end() && distribution(gen) > 3) { // high chance of betting or raising, if allowed
-      return {Action::Type::RAISE, raise_distribution(gen)};
-    }
-    if (legalActions.find(Action::Type::CHECK) != legalActions.end()) {  // otherwise, check-call
+    if (legalActions.find(Action::Type::CHECK) != legalActions.end()) {  // check-call
       return {Action::Type::CHECK};
     }
     return {Action::Type::CALL};

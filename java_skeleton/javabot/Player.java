@@ -80,8 +80,8 @@ public class Player implements Bot {
         int continueCost = oppPip - myPip;  // the number of chips needed to stay in the pot
         int myContribution = State.STARTING_STACK - myStack;  // the number of chips you have contributed to the pot
         int oppContribution = State.STARTING_STACK - oppStack;  // the number of chips your opponent has contributed to the pot
-        int minCost = 10;
-        int maxCost = 20;
+        int minCost = 0;
+        int maxCost = 0;
         if (legalActions.contains(ActionType.RAISE_ACTION_TYPE)) {
            List<Integer> raiseBounds = roundState.raiseBounds();  // the smallest and largest numbers of chips for a legal bet/raise
            minCost = raiseBounds.get(0) - myPip;  // the cost of a minimum bet/raise
@@ -90,13 +90,8 @@ public class Player implements Bot {
 
         // Basic bot that bids and raises randomly, or just checks and calls.
         Random rand = new Random();
-        if (legalActions.contains(ActionType.BID_ACTION_TYPE)) { // Random bid between 0 and 9
-            return new Action(ActionType.BID_ACTION_TYPE, rand.nextInt(10));
-        }
-        if (legalActions.contains(ActionType.RAISE_ACTION_TYPE)) {
-            if (rand.nextInt(10) > 5) {
-                return new Action(ActionType.RAISE_ACTION_TYPE, rand.nextInt(maxCost - minCost + 1) + minCost); // Random legal raise.
-            }
+        if (legalActions.contains(ActionType.BID_ACTION_TYPE)) { 
+            return new Action(ActionType.BID_ACTION_TYPE, rand.nextInt(raiseBounds.get(1))); // Random bid between 0 and our stack size
         }
         if (legalActions.contains(ActionType.CHECK_ACTION_TYPE)) {  // Check
             return new Action(ActionType.CHECK_ACTION_TYPE);
