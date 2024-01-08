@@ -95,29 +95,12 @@ public class Player implements Bot {
         }
         if (legalActions.contains(ActionType.CHECK_ACTION_TYPE)) {  // Check
             return new Action(ActionType.CHECK_ACTION_TYPE);
-        } else if (legalActions.contains(ActionType.RAISE_ACTION_TYPE)) {
-            return new Action(ActionType.RAISE_ACTION_TYPE, minCost);
         } else {
             return new Action(ActionType.FOLD_ACTION_TYPE);
         }
 
 
-        
 
-        // Basic bot that bids and raises randomly, or just checks and calls.
-        // Random rand = new Random();
-        // if (legalActions.contains(ActionType.BID_ACTION_TYPE)) { // Random bid between 0 and 9
-        //     return new Action(ActionType.BID_ACTION_TYPE, rand.nextInt(10));
-        // }
-        // if (legalActions.contains(ActionType.RAISE_ACTION_TYPE)) {
-        //     if (rand.nextInt(10) > 5) {
-        //         return new Action(ActionType.RAISE_ACTION_TYPE, rand.nextInt(maxCost - minCost + 1) + minCost); // Random legal raise.
-        //     }
-        // }
-        // if (legalActions.contains(ActionType.CHECK_ACTION_TYPE)) {  // Check
-        //     return new Action(ActionType.CHECK_ACTION_TYPE);
-        // }
-        // return new Action(ActionType.CALL_ACTION_TYPE); // Call if can't check
     }
 
     /**
