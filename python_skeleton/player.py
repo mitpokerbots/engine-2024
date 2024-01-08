@@ -94,18 +94,44 @@ class Player(Bot):
            min_cost = min_raise - my_pip  # the cost of a minimum bet/raise
            max_cost = max_raise - my_pip  # the cost of a maximum bet/raise
 
+        # Tries checking if it's big blind, otherwise folds preflop.
+        # Always tries min raising if it's small blind preflop.
+        # Always tries bidding 1/2 of the pot. 
+        # Checks and min raises everything else.
+           
+        if (street == 0): # for preflop
+            if (active == 0): # in the case of small blind
+                if RaiseAction in legal_actions:
+                    return RaiseAction(min_cost)
+            else: # in the case of big blind
+                if CheckAction in legal_actions:
+                    return CheckAction
+                else:
+                    return FoldAction
+                
+        if BidAction in legal_actions: # for bidding
+            total_pot = my_contribution + opp_contribution
+            return BidAction(min(total_pot // 2, my_stack)) # bids 1/2 pot or remaining stack
+        
+        if CheckAction in legal_actions: # try checking if possible, otherwise min raise, otherwise fold
+            return CheckAction
+        elif RaiseAction in legal_actions:
+            return RaiseAction(min_cost)
+        else:
+            return FoldAction
+
         # Basic bot that does random raises and bids, or just checks and calls.
-        if RaiseAction in legal_actions:
-            if random.random() > 0.5:
-                return RaiseAction((int(random.random()*3)+continue_cost)*2 + opp_pip)
-        if CheckAction in legal_actions:
-            return CheckAction()
-        elif BidAction in legal_actions:
-            if active == 0:
-                return BidAction(int(random.random()*10))
-            else:
-                return BidAction(int(random.random()*2)+my_stack)
-        return CallAction()
+        # if RaiseAction in legal_actions:
+        #     if random.random() > 0.5:
+        #         return RaiseAction((int(random.random()*3)+continue_cost)*2 + opp_pip)
+        # if CheckAction in legal_actions:
+        #     return CheckAction()
+        # elif BidAction in legal_actions:
+        #     if active == 0:
+        #         return BidAction(int(random.random()*10))
+        #     else:
+        #         return BidAction(int(random.random()*2)+my_stack)
+        # return CallAction()
 
 
 if __name__ == '__main__':
