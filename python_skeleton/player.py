@@ -86,6 +86,8 @@ class Player(Bot):
         opp_pip = round_state.pips[1-active]  # the number of chips your opponent has contributed to the pot this round of betting
         my_stack = round_state.stacks[active]  # the number of chips you have remaining
         opp_stack = round_state.stacks[1-active]  # the number of chips your opponent has remaining
+        my_bid = round_state.bids[active]  # How much you bid previously (available only after auction)
+        opp_bid = round_state.bids[1-active]  # How much opponent bid previously (available only after auction)
         continue_cost = opp_pip - my_pip  # the number of chips needed to stay in the pot
         my_contribution = STARTING_STACK - my_stack  # the number of chips you have contributed to the pot
         opp_contribution = STARTING_STACK - opp_stack  # the number of chips your opponent has contributed to the pot
@@ -98,6 +100,7 @@ class Player(Bot):
         if CheckAction in legal_actions:
             return CheckAction()
         elif BidAction in legal_actions:
+            min_bid, max_bid = round_state.bid_bounds()
             return BidAction(int(random.random()*my_stack)) # random bid between 0 and our stack
         return CallAction()
 
