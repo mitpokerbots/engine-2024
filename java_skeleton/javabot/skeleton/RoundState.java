@@ -152,7 +152,7 @@ public class RoundState extends State {
                 if (!newBids.contains(null)) {
                     RoundState state = new RoundState(1, 3, false, newBids, this.pips, this.stacks,
                                                   this.hands, this.deck, this);
-                    return state.proceedStreet();
+                    return state;
                 }
                 else {
                     return new RoundState(this.button + 1, 3, true, newBids, this.pips, this.stacks,

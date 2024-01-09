@@ -97,7 +97,7 @@ StatePtr RoundState::proceed(Action action) const {
       if (newBids[1-active].has_value()) { //both players have submitted bids
         auto state = std::make_shared<RoundState>(1, 3, false, newBids, pips, stacks,
                                                 hands, deck, getShared());
-        return state->proceedStreet();
+        return state;
       }
       else {
         return std::make_shared<RoundState>(button + 1, 3, true, newBids, pips, stacks,
