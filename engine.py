@@ -412,7 +412,7 @@ class Game():
             self.player_messages[0].append(compressed_board)
             self.player_messages[1].append(compressed_board)
         # engine communicates cards after the auction
-        if round_state.street == 4 and round_state.auction is False and round_state.button == 1: 
+        if round_state.street == 3 and round_state.auction is False and round_state.button == 1: 
             self.player_messages[0].append('P0')
             self.player_messages[0].append('N' + ','.join([str(x) for x in round_state.stacks]) + '_' + ','.join([str(x) for x in round_state.bids]) + '_' + CCARDS(round_state.hands[0]))
             self.player_messages[1].append('P1')
