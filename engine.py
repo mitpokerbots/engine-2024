@@ -181,7 +181,7 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
                     new_stacks = list(self.stacks)
                     new_stacks[winner] -= self.bids[1 - winner]
                     state = RoundState(1, self.street, False, self.bids, self.pips, new_stacks, self.hands, self.deck, self)
-                return state.proceed_street()
+                return state
             else:
                 return RoundState(self.button + 1, self.street, True, self.bids, self.pips, self.stacks, self.hands, self.deck, self)
         if isinstance(action, RaiseAction):

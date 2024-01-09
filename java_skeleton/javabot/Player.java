@@ -93,7 +93,7 @@ public class Player implements Bot {
         // Basic bot that bids and raises randomly, or just checks and calls.
         Random rand = new Random();
         if (legalActions.contains(ActionType.BID_ACTION_TYPE)) { 
-            return new Action(ActionType.BID_ACTION_TYPE, rand.nextInt(raiseBounds.get(1))); // Random bid between 0 and our stack size
+            return new Action(ActionType.BID_ACTION_TYPE, rand.nextInt(myPip + maxCost)); // Random bid between 0 and our stack size
         }
         if (legalActions.contains(ActionType.CHECK_ACTION_TYPE)) {  // Check
             return new Action(ActionType.CHECK_ACTION_TYPE);

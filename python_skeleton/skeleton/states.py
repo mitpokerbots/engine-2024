@@ -90,7 +90,7 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
             self.bids[active] = True
             if None not in self.bids:       # both players have submitted bids and we deal the extra card
                 state = RoundState(1, 3, False, self.bids, self.pips, self.stacks, self.hands, self.deck, self)
-                return state.proceed_street()
+                return state
             else: # other player's turn to bid
                 return RoundState(self.button + 1, 3, True, self.bids, self.pips, self.stacks, self.hands, self.deck, self)
         # isinstance(action, RaiseAction)
