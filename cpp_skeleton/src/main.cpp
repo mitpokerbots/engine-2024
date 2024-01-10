@@ -58,8 +58,8 @@ struct Bot {
     int oppPip = roundState->pips[1-active];  // the number of chips your opponent has contributed to the pot this round of betting
     int myStack = roundState->stacks[active];  // the number of chips you have remaining
     int oppStack = roundState->stacks[1-active];  // the number of chips your opponent has remaining
-    int myBid = roundState->bids[active]       // How much you bid previously (available only after auction)
-    int oppBid = roundState->bids[1 - active]  // How much opponent bid previously (available only after auction)
+    std::optional<int> myBid = roundState->bids[active];       // How much you bid previously (available only after auction)
+    std::optional<int> oppBid = roundState->bids[1 - active];  // How much opponent bid previously (available only after auction)
     int continueCost = oppPip - myPip;  // the number of chips needed to stay in the pot
     int myContribution = STARTING_STACK - myStack;  // the number of chips you have contributed to the pot
     int oppContribution = STARTING_STACK - oppStack;  // the number of chips your opponent has contributed to the pot
