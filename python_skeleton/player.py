@@ -43,7 +43,6 @@ class Player(Bot):
         #round_num = game_state.round_num  # the round number from 1 to NUM_ROUNDS
         #my_cards = round_state.hands[active]  # your cards
         #big_blind = bool(active)  # True if you are the big blind
-        print("new round")
         pass
 
     def handle_round_over(self, game_state, terminal_state, active):
@@ -92,7 +91,6 @@ class Player(Bot):
         continue_cost = opp_pip - my_pip  # the number of chips needed to stay in the pot
         my_contribution = STARTING_STACK - my_stack  # the number of chips you have contributed to the pot
         opp_contribution = STARTING_STACK - opp_stack  # the number of chips your opponent has contributed to the pot
-
 
         if RaiseAction in legal_actions:
            min_raise, max_raise = round_state.raise_bounds()  # the smallest and largest numbers of chips for a legal bet/raise

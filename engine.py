@@ -417,7 +417,6 @@ class Game():
             self.player_messages[0].append('N' + ','.join([str(x) for x in round_state.stacks]) + '_' + ','.join([str(x) for x in round_state.bids]) + '_' + CCARDS(round_state.hands[0]))
             self.player_messages[1].append('P1')
             self.player_messages[1].append('N' + ','.join([str(x) for x in round_state.stacks]) + '_' + ','.join([str(x) for x in round_state.bids]) + '_' + CCARDS(round_state.hands[1]))
-
     def log_action(self, name, action, bet_override):
         '''
         Incorporates action information into the game log and player messages.

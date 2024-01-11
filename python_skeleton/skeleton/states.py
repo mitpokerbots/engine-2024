@@ -94,7 +94,6 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
                     new_stacks = list(self.stacks)
                     new_stacks[0] -= self.bids[0]
                     new_stacks[1] -= self.bids[1]
-                    print(new_stacks)
                     state = RoundState(1, self.street, False, self.bids, self.pips, new_stacks, self.hands, self.deck, self)
                 else:
                 # case in which bids are not equal

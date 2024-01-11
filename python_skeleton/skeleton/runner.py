@@ -54,7 +54,6 @@ class Runner():
         active = 0
         round_flag = True
         for packet in self.receive():
-            # print(packet)
             for clause in packet:
                 if clause[0] == 'T':
                     game_state = GameState(game_state.bankroll, float(clause[1:]), game_state.round_num)
@@ -85,7 +84,7 @@ class Runner():
                     bids = bids.split(',')
                     stacks = stacks.split(',')
                     hands[active] = active_hands.split(',')
-                    round_state = RoundState(round_state.button, round_state.street, round_state.auction, [int(x) for x in bids], round_state.pips, [int(x) for x in stacks], hands, [], round_state)
+                    round_state = RoundState(round_state.button, round_state.street, round_state.auction, [int(x) for x in bids], round_state.pips, [int(x) for x in stacks], hands, round_state.deck, round_state)
                 elif clause[0] == 'B':
                     round_state = RoundState(round_state.button, round_state.street, round_state.auction, round_state.bids, 
                                             round_state.pips, round_state.stacks, round_state.hands, clause[1:].split(','), 

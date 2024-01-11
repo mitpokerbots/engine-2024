@@ -147,7 +147,7 @@ public:
 
             // Assuming RoundState constructor and member variables are defined
             auto maker = std::static_pointer_cast<const RoundState>(roundState);
-            roundState = std::make_shared<RoundState>(maker->button, maker->street, maker->auction, bids_int, maker->pips, stacks_int, hands, std::array<std::string, 5>(), maker->previousState);
+            roundState = std::make_shared<RoundState>(maker->button, maker->street, maker->auction, bids_int, maker->pips, stacks_int, hands, maker->deck, maker->previousState);
             break;
           }
           case 'B': {
