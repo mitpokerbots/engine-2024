@@ -77,8 +77,11 @@ public class Player implements Bot {
         int oppPip = roundState.pips.get(1-active);  // the number of chips your opponent has contributed to the pot this round of betting
         int myStack = roundState.stacks.get(active);  // the number of chips you have remaining
         int oppStack = roundState.stacks.get(1-active);  // the number of chips your opponent has remaining
-        int myBids = roundState.bids.get(active);        // How much you bid previously (available only after auction)
-        int oppBids = roundState.bids.get(1-active);     // How much opponent bid previously (available only after auction)
+        if (street > 3)
+        {
+            int myBids = roundState.bids.get(active);        // How much you bid previously (available only after auction)
+            int oppBids = roundState.bids.get(1-active);     // How much opponent bid previously (available only after auction)
+        }
         int continueCost = oppPip - myPip;  // the number of chips needed to stay in the pot
         int myContribution = State.STARTING_STACK - myStack;  // the number of chips you have contributed to the pot
         int oppContribution = State.STARTING_STACK - oppStack;  // the number of chips your opponent has contributed to the pot

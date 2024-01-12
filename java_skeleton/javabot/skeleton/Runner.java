@@ -155,7 +155,7 @@ public class Runner {
                         }
                         RoundState maker = (RoundState)roundState;
                         roundState = new RoundState(maker.button, maker.street, maker.auction, bids_int, maker.pips, stacks_int,
-                                                    hands, maker.board, maker.previousState);
+                                                    hands, maker.deck, maker.previousState);
                         break;
                     }
                     case 'B': {
