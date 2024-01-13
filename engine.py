@@ -396,6 +396,17 @@ class Game():
         '''
         Incorporates RoundState information into the game log and player messages.
         '''
+        # engine communicates cards after the auction
+        if round_state.street == 3 and round_state.auction is False and round_state.button == 1:
+            for i in range(2):
+                if len(round_state.hands[i]) > 2:
+                    new_cards = PCARDS(round_state.hands[i]).split(" ")
+                    self.log.append('{} won the auction and was dealt {}'.format(players[i].name, "["+new_cards[-1]))
+            self.player_messages[0].append('P0')
+            self.player_messages[0].append('N' + ','.join([str(x) for x in round_state.stacks]) + '_' + ','.join([str(x) for x in round_state.bids]) + '_' + CCARDS(round_state.hands[0]))
+            self.player_messages[1].append('P1')
+            self.player_messages[1].append('N' + ','.join([str(x) for x in round_state.stacks]) + '_' + ','.join([str(x) for x in round_state.bids]) + '_' + CCARDS(round_state.hands[1]))
+
         if round_state.street == 0 and round_state.button == 0:
             self.log.append('{} posts the blind of {}'.format(players[0].name, SMALL_BLIND))
             self.log.append('{} posts the blind of {}'.format(players[1].name, BIG_BLIND))
@@ -411,12 +422,7 @@ class Game():
             compressed_board = 'B' + CCARDS(board)
             self.player_messages[0].append(compressed_board)
             self.player_messages[1].append(compressed_board)
-        # engine communicates cards after the auction
-        if round_state.street == 3 and round_state.auction is False and round_state.button == 1: 
-            self.player_messages[0].append('P0')
-            self.player_messages[0].append('N' + ','.join([str(x) for x in round_state.stacks]) + '_' + ','.join([str(x) for x in round_state.bids]) + '_' + CCARDS(round_state.hands[0]))
-            self.player_messages[1].append('P1')
-            self.player_messages[1].append('N' + ','.join([str(x) for x in round_state.stacks]) + '_' + ','.join([str(x) for x in round_state.bids]) + '_' + CCARDS(round_state.hands[1]))
+            
     def log_action(self, name, action, bet_override):
         '''
         Incorporates action information into the game log and player messages.
