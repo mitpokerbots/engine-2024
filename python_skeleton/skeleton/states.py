@@ -49,6 +49,7 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
         continue_cost = self.pips[1-active] - self.pips[active]
         max_contribution = min(self.stacks[active], self.stacks[1-active] + continue_cost)
         min_contribution = min(max_contribution, continue_cost + max(continue_cost, BIG_BLIND))
+        print("the pips are", self.pips, min_contribution)
         return (self.pips[active] + min_contribution, self.pips[active] + max_contribution)
 
     def proceed_street(self):
@@ -87,20 +88,20 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
             # let opponent act
             return RoundState(self.button + 1, self.street, self.auction, self.bids, self.pips, self.stacks, self.hands, self.deck, self)
         if isinstance(action, BidAction):
-            self.bids[active] = action.amount
+            self.bids[active] = -1 #action.amount
             if None not in self.bids:       # both players have submitted bids and we deal the extra card
                 # case in which bids are equal, both players receive card
                 if self.bids[0] == self.bids[1]:
-                    new_stacks = list(self.stacks)
-                    new_stacks[0] -= self.bids[0]
-                    new_stacks[1] -= self.bids[1]
-                    state = RoundState(1, self.street, False, self.bids, self.pips, new_stacks, self.hands, self.deck, self)
+                    # new_stacks = list(self.stacks)
+                    # new_stacks[0] -= self.bids[0]
+                    # new_stacks[1] -= self.bids[1]
+                    state = RoundState(1, self.street, False, self.bids, self.pips, self.stacks, self.hands, self.deck, self)
                 else:
                 # case in which bids are not equal
-                    winner = self.bids.index(max(self.bids))
-                    new_stacks = list(self.stacks)
-                    new_stacks[winner] -= self.bids[1 - winner]
-                    state = RoundState(1, self.street, False, self.bids, self.pips, new_stacks, self.hands, self.deck, self)
+                    # winner = self.bids.index(max(self.bids))
+                    # new_stacks = list(self.stacks)
+                    # new_stacks[winner] -= self.bids[1 - winner]
+                    state = RoundState(1, self.street, False, self.bids, self.pips, self.stacks, self.hands, self.deck, self)
                 return state
             else:
                 return RoundState(self.button + 1, self.street, True, self.bids, self.pips, self.stacks, self.hands, self.deck, self)
