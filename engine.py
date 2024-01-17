@@ -164,7 +164,6 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
             # let opponent act
             return RoundState(self.button + 1, self.street, self.auction, self.bids, self.pips, self.stacks, self.hands, self.deck, self)
         if isinstance(action, BidAction):
-            print("the bid amount was", action.amount)
             self.bids[active] = action.amount 
             if None not in self.bids:       # both players have submitted bids and we deal the extra card
                 # case in which bids are equal, both players receive card

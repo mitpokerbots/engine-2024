@@ -49,7 +49,6 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'auction', 'bids
         continue_cost = self.pips[1-active] - self.pips[active]
         max_contribution = min(self.stacks[active], self.stacks[1-active] + continue_cost)
         min_contribution = min(max_contribution, continue_cost + max(continue_cost, BIG_BLIND))
-        print("the pips are", self.pips, min_contribution)
         return (self.pips[active] + min_contribution, self.pips[active] + max_contribution)
 
     def proceed_street(self):

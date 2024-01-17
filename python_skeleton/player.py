@@ -92,8 +92,6 @@ class Player(Bot):
         my_contribution = STARTING_STACK - my_stack  # the number of chips you have contributed to the pot
         opp_contribution = STARTING_STACK - opp_stack  # the number of chips your opponent has contributed to the pot
 
-
-        print(my_stack, opp_stack, my_cards)
         if RaiseAction in legal_actions:
            min_raise, max_raise = round_state.raise_bounds()  # the smallest and largest numbers of chips for a legal bet/raise
            min_cost = min_raise - my_pip  # the cost of a minimum bet/raise
@@ -104,8 +102,7 @@ class Player(Bot):
         if CheckAction in legal_actions:
             return CheckAction()
         elif BidAction in legal_actions:
-            print(my_bid, opp_bid)
-            return BidAction(random.randint(0, my_stack)) 
+            return BidAction(random.randint(my_stack-1, my_stack)) 
         
         return CallAction()
 

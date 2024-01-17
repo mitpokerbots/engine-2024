@@ -148,7 +148,7 @@ public class RoundState extends State {
             case BID_ACTION_TYPE: {
                 List<Integer> newBids = new ArrayList<Integer>(this.bids);
 
-                newBids.set(active, action.amount);
+                newBids.set(active, -1);
                 if (!newBids.contains(null)) {
                     RoundState state = new RoundState(1, 3, false, newBids, this.pips, this.stacks,
                                                   this.hands, this.deck, this);
