@@ -77,13 +77,8 @@ public class Player implements Bot {
         int oppPip = roundState.pips.get(1-active);  // the number of chips your opponent has contributed to the pot this round of betting
         int myStack = roundState.stacks.get(active);  // the number of chips you have remaining
         int oppStack = roundState.stacks.get(1-active);  // the number of chips your opponent has remaining
-        if (street > 3)
-        {
-            int myBids = roundState.bids.get(active);        // How much you bid previously (available only after auction)
-            int oppBids = roundState.bids.get(1-active);     // How much opponent bid previously (available only after auction)
-        }
-        Integer myBid = roundState.bids.get(active);
-        Integer oppBid = roundState.bids.get(1-active);
+        Integer myBid = roundState.bids.get(active); // How much you have bid. Null or -1 until after the auction.
+        Integer oppBid = roundState.bids.get(1-active); // How much your opponent has bid. Null or -1 until after auction.
         int continueCost = oppPip - myPip;  // the number of chips needed to stay in the pot
         int myContribution = State.STARTING_STACK - myStack;  // the number of chips you have contributed to the pot
         int oppContribution = State.STARTING_STACK - oppStack;  // the number of chips your opponent has contributed to the pot
@@ -93,15 +88,6 @@ public class Player implements Bot {
             List<Integer> raiseBounds = roundState.raiseBounds(); // the smallest and largest numbers of chips for a legal bet/raise
             minCost = raiseBounds.get(0) - myPip; // the cost of a minimum bet/raise
             maxCost = raiseBounds.get(1) - myPip; // the cost of a maximum bet/raise
-        }
-        System.out.println(street);
-        if (myBid != null)
-        {
-            System.out.println(myBid);
-        }
-        if (oppBid != null)
-        {
-            System.out.println(oppBid);
         }
 
         // Basic bot that bids and raises randomly, or just checks and calls.
