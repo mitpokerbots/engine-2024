@@ -82,6 +82,8 @@ public class Player implements Bot {
             int myBids = roundState.bids.get(active);        // How much you bid previously (available only after auction)
             int oppBids = roundState.bids.get(1-active);     // How much opponent bid previously (available only after auction)
         }
+        Integer myBid = roundState.bids.get(active);
+        Integer oppBid = roundState.bids.get(1-active);
         int continueCost = oppPip - myPip;  // the number of chips needed to stay in the pot
         int myContribution = State.STARTING_STACK - myStack;  // the number of chips you have contributed to the pot
         int oppContribution = State.STARTING_STACK - oppStack;  // the number of chips your opponent has contributed to the pot
@@ -92,16 +94,25 @@ public class Player implements Bot {
             minCost = raiseBounds.get(0) - myPip; // the cost of a minimum bet/raise
             maxCost = raiseBounds.get(1) - myPip; // the cost of a maximum bet/raise
         }
+        System.out.println(street);
+        if (myBid != null)
+        {
+            System.out.println(myBid);
+        }
+        if (oppBid != null)
+        {
+            System.out.println(oppBid);
+        }
 
         // Basic bot that bids and raises randomly, or just checks and calls.
         Random rand = new Random();
         if (legalActions.contains(ActionType.BID_ACTION_TYPE)) { 
-            return new Action(ActionType.BID_ACTION_TYPE, rand.nextInt(myPip + maxCost)); // Random bid between 0 and our stack size
+            return new Action(ActionType.BID_ACTION_TYPE, rand.nextInt(myStack)); // Random bid between 0 and our stack size
         }
         if (legalActions.contains(ActionType.CHECK_ACTION_TYPE)) {  // Check
             return new Action(ActionType.CHECK_ACTION_TYPE);
         } else {
-            return new Action(ActionType.FOLD_ACTION_TYPE);
+            return new Action(ActionType.CALL_ACTION_TYPE);
         }
 
 

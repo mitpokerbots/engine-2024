@@ -97,12 +97,12 @@ class Player(Bot):
            min_cost = min_raise - my_pip  # the cost of a minimum bet/raise
            max_cost = max_raise - my_pip  # the cost of a maximum bet/raise
         
-        if RaiseAction in legal_actions and random.random() < 0.3:
-            return RaiseAction(random.randint(min_raise, max_raise))
+        if RaiseAction in legal_actions and random.random() < 0.99:
+            return RaiseAction( max_raise)
         if CheckAction in legal_actions:
             return CheckAction()
         elif BidAction in legal_actions:
-            return BidAction(random.randint(my_stack-1, my_stack)) 
+            return BidAction(0) 
         
         return CallAction()
 

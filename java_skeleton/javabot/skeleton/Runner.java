@@ -153,7 +153,6 @@ public class Runner {
                             bids_int.set(i, Integer.parseInt(bids[i]));
                             stacks_int.set(i, Integer.parseInt(stacks[i]));
                         }
-                        if (bids.get(active))
                         RoundState maker = (RoundState)roundState;
                         roundState = new RoundState(maker.button, maker.street, maker.auction, bids_int, maker.pips, stacks_int,
                                                     hands, maker.deck, maker.previousState);
