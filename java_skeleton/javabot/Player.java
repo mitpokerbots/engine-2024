@@ -77,11 +77,8 @@ public class Player implements Bot {
         int oppPip = roundState.pips.get(1-active);  // the number of chips your opponent has contributed to the pot this round of betting
         int myStack = roundState.stacks.get(active);  // the number of chips you have remaining
         int oppStack = roundState.stacks.get(1-active);  // the number of chips your opponent has remaining
-        if (street > 3)
-        {
-            int myBids = roundState.bids.get(active);        // How much you bid previously (available only after auction)
-            int oppBids = roundState.bids.get(1-active);     // How much opponent bid previously (available only after auction)
-        }
+        Integer myBid = roundState.bids.get(active); // How much you have bid. Null or -1 until after the auction.
+        Integer oppBid = roundState.bids.get(1-active); // How much your opponent has bid. Null or -1 until after auction.
         int continueCost = oppPip - myPip;  // the number of chips needed to stay in the pot
         int myContribution = State.STARTING_STACK - myStack;  // the number of chips you have contributed to the pot
         int oppContribution = State.STARTING_STACK - oppStack;  // the number of chips your opponent has contributed to the pot
@@ -96,12 +93,12 @@ public class Player implements Bot {
         // Basic bot that bids and raises randomly, or just checks and calls.
         Random rand = new Random();
         if (legalActions.contains(ActionType.BID_ACTION_TYPE)) { 
-            return new Action(ActionType.BID_ACTION_TYPE, rand.nextInt(myPip + maxCost)); // Random bid between 0 and our stack size
+            return new Action(ActionType.BID_ACTION_TYPE, rand.nextInt(myStack)); // Random bid between 0 and our stack size
         }
         if (legalActions.contains(ActionType.CHECK_ACTION_TYPE)) {  // Check
             return new Action(ActionType.CHECK_ACTION_TYPE);
         } else {
-            return new Action(ActionType.FOLD_ACTION_TYPE);
+            return new Action(ActionType.CALL_ACTION_TYPE);
         }
 
 
