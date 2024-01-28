@@ -32,6 +32,8 @@ import os
 sys.path.append(os.getcwd())
 from config import *
 
+PLAYER_TIMEOUT = 120
+
 FoldAction = namedtuple('FoldAction', [])
 CallAction = namedtuple('CallAction', [])
 CheckAction = namedtuple('CheckAction', [])
@@ -231,6 +233,7 @@ class Player():
                 proc = subprocess.run(self.commands['build'],
                                       stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                       cwd=self.path, timeout=BUILD_TIMEOUT, check=False)
+                
                 self.bytes_queue.put(proc.stdout)
             except subprocess.TimeoutExpired as timeout_expired:
                 error_message = 'Timed out waiting for ' + self.name + ' to build'
@@ -261,8 +264,12 @@ class Player():
                     # function for bot listening
                     def enqueue_output(out, queue):
                         try:
+                            self.bytes_queue.put(proc.stdout)
                             for line in out:
-                                queue.put(line)
+                                if self.path == r"./player_chatbot":
+                                    print(line.strip().decode("utf-8"))
+                                else:
+                                    queue.put(line)
                         except ValueError:
                             pass
                     # start a separate bot listening thread which dies with the program
@@ -270,7 +277,10 @@ class Player():
                     # block until we timeout or the player connects
                     client_socket, _ = server_socket.accept()
                     with client_socket:
-                        client_socket.settimeout(CONNECT_TIMEOUT)
+                        if self.path == "./player_chatbot":
+                            client_socket.settimeout(PLAYER_TIMEOUT)
+                        else:
+                            client_socket.settimeout(CONNECT_TIMEOUT)
                         sock = client_socket.makefile('rw')
                         self.socketfile = sock
                         print(self.name, 'connected successfully')
@@ -295,7 +305,10 @@ class Player():
                 print('Could not close socket connection with', self.name)
         if self.bot_subprocess is not None:
             try:
-                outs, _ = self.bot_subprocess.communicate(timeout=CONNECT_TIMEOUT)
+                if self.path == './player_chatbot':
+                    outs, _ = self.bot_subprocess.communicate(timeout=PLAYER_TIMEOUT)
+                else:
+                    outs, _ = self.bot_subprocess.communicate(timeout=CONNECT_TIMEOUT)
                 self.bytes_queue.put(outs)
             except subprocess.TimeoutExpired:
                 print('Timed out waiting for', self.name, 'to quit')
@@ -329,7 +342,7 @@ class Player():
                 self.socketfile.flush()
                 clause = self.socketfile.readline().strip()
                 end_time = time.perf_counter()
-                if ENFORCE_GAME_CLOCK:
+                if ENFORCE_GAME_CLOCK and self.path != r"./player_chatbot":
                     self.game_clock -= end_time - start_time
                 if self.game_clock <= 0.:
                     raise socket.timeout
